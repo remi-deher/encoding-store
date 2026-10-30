@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "subtitles",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "name": "Sous-titres",
   "supportedHostContractVersions": [
     1
@@ -1050,6 +1050,20 @@
       "minimumRuntimePluginVersion": "1.1.0",
       "producesFiles": false,
       "category": "text"
+    }
+  ],
+  "requiredToolPackages": [
+    {
+      "toolPackageId": "ffmpeg",
+      "minimumVersion": "6.1.1"
+    },
+    {
+      "toolPackageId": "mkvtoolnix",
+      "minimumVersion": "82.0.0"
+    },
+    {
+      "toolPackageId": "mediainfo",
+      "minimumVersion": "24.1.1"
     }
   ]
 }

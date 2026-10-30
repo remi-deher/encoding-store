@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "images",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Traitement d'images",
   "supportedHostContractVersions": [
     1
@@ -246,6 +246,16 @@
       "requiresWriteAccess": true,
       "compatiblePluginVersions": [],
       "category": "images"
+    }
+  ],
+  "requiredToolPackages": [
+    {
+      "toolPackageId": "ffmpeg",
+      "minimumVersion": "6.1.1"
+    },
+    {
+      "toolPackageId": "imagemagick",
+      "minimumVersion": "6.9.12"
     }
   ]
 }

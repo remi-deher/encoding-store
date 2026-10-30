@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "ai",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Intelligence Artificielle",
   "supportedHostContractVersions": [
     1
@@ -273,5 +273,11 @@
         "defaultValue": "llama3:latest"
       }
     ]
-  }
+  },
+  "requiredToolPackages": [
+    {
+      "toolPackageId": "ffmpeg",
+      "minimumVersion": "6.1.1"
+    }
+  ]
 }

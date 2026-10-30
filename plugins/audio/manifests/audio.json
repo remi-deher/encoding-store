@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "audio",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "name": "Audio",
   "supportedHostContractVersions": [
     1
@@ -1197,6 +1197,16 @@
       "minimumRuntimePluginVersion": "1.1.0",
       "producesFiles": false,
       "category": "audio"
+    }
+  ],
+  "requiredToolPackages": [
+    {
+      "toolPackageId": "ffmpeg",
+      "minimumVersion": "6.1.1"
+    },
+    {
+      "toolPackageId": "mediainfo",
+      "minimumVersion": "24.1.1"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "probe",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "name": "Sondes & Analyse média",
   "supportedHostContractVersions": [
     1
@@ -853,6 +853,16 @@
       "requiresWriteAccess": false,
       "minimumRuntimePluginVersion": "1.1.0",
       "category": "validation"
+    }
+  ],
+  "requiredToolPackages": [
+    {
+      "toolPackageId": "ffmpeg",
+      "minimumVersion": "6.1.1"
+    },
+    {
+      "toolPackageId": "mediainfo",
+      "minimumVersion": "24.1.1"
     }
   ]
 }

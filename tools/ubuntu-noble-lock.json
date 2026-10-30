@@ -1,0 +1,45 @@
+{
+  "distribution": "Ubuntu 24.04 LTS (Noble Numbat)",
+  "architecture": "amd64",
+  "source": "https://archive.ubuntu.com/ubuntu/",
+  "packages": {
+    "ffmpeg": {
+      "version": "7:6.1.1-3ubuntu5",
+      "filename": "pool/universe/f/ffmpeg/ffmpeg_6.1.1-3ubuntu5_amd64.deb",
+      "sha256_expected_from_Ubuntu_Packages": "1a23baace5f2688a47e28119aedae6993cd638e6279a7227dfc52d9a337a1c17",
+      "sha256_downloaded": "1a23baace5f2688a47e28119aedae6993cd638e6279a7227dfc52d9a337a1c17",
+      "copyrightPath": "licenses/ubuntu-noble/ffmpeg.copyright"
+    },
+    "mkvtoolnix": {
+      "version": "82.0-1build2",
+      "filename": "pool/universe/m/mkvtoolnix/mkvtoolnix_82.0-1build2_amd64.deb",
+      "sha256_expected_from_Ubuntu_Packages": "6ab9391fc5b1279c50ce0c4c4a9a63da4b106aba376858e17e3006386b0f77c5",
+      "sha256_downloaded": "6ab9391fc5b1279c50ce0c4c4a9a63da4b106aba376858e17e3006386b0f77c5",
+      "copyrightPath": "licenses/ubuntu-noble/mkvtoolnix.copyright"
+    },
+    "mediainfo": {
+      "version": "24.01.1-1build2",
+      "filename": "pool/universe/m/mediainfo/mediainfo_24.01.1-1build2_amd64.deb",
+      "sha256_expected_from_Ubuntu_Packages": "8267d0c4447bc529ccebe632673de93abd9c1831f03b030aef0e6f3532393c2f",
+      "sha256_downloaded": "8267d0c4447bc529ccebe632673de93abd9c1831f03b030aef0e6f3532393c2f",
+      "copyrightPath": "licenses/ubuntu-noble/mediainfo.copyright"
+    },
+    "imagemagick-6.q16": {
+      "version": "8:6.9.12.98+dfsg1-5.2build2",
+      "filename": "pool/universe/i/imagemagick/imagemagick-6.q16_6.9.12.98+dfsg1-5.2build2_amd64.deb",
+      "sha256_expected_from_Ubuntu_Packages": "5dd63a2b9343783caa918c6d74d0dfb708ff7b6ebf5b5d4a22ef9c8adbc73f2f",
+      "sha256_downloaded": "5dd63a2b9343783caa918c6d74d0dfb708ff7b6ebf5b5d4a22ef9c8adbc73f2f",
+      "copyrightPath": "licenses/ubuntu-noble/imagemagick-6.q16.copyright"
+    }
+  },
+  "release": {
+    "url": "https://archive.ubuntu.com/ubuntu/dists/noble/InRelease",
+    "sha256": "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0",
+    "verifiedSignatureFingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C"
+  },
+  "packageIndex": {
+    "url": "https://archive.ubuntu.com/ubuntu/dists/noble/universe/binary-amd64/Packages.xz",
+    "sha256": "ba9057fa1b91438cc8a1d26808d00c85389fe101d0c1496254df97236405599a",
+    "coveredBySignedRelease": true
+  }
+}
