@@ -1,0 +1,1530 @@
+{
+  "contractVersion": 1,
+  "id": "base",
+  "version": "1.10.1",
+  "name": "Base",
+  "supportedHostContractVersions": [
+    1
+  ],
+  "components": [
+    {
+      "id": "base-input-file",
+      "version": "1.0.0",
+      "name": "Fichier",
+      "description": "Reçoit un fichier. Les scripts préparatoires peuvent précéder la lecture des métadonnées média.",
+      "kind": "input",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Continuer sur ce chemin."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": []
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "inputs"
+    },
+    {
+      "id": "base-input-video",
+      "version": "1.0.0",
+      "name": "Fichier vidéo",
+      "description": "Reçoit le fichier et analyse ses métadonnées avant les actions du flow.",
+      "kind": "input",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Continuer sur ce chemin."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": []
+      },
+      "requiredTools": [],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "inputs"
+    },
+    {
+      "id": "base-input-image",
+      "version": "1.0.0",
+      "name": "Fichier image",
+      "description": "Reçoit le fichier et analyse ses métadonnées avant les actions du flow.",
+      "kind": "input",
+      "mediaType": "image",
+      "supportedFlowMediaTypes": [
+        "image"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Continuer sur ce chemin."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": []
+      },
+      "requiredTools": [],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "inputs"
+    },
+    {
+      "id": "base-input-music",
+      "version": "1.0.0",
+      "name": "Fichier audio",
+      "description": "Reçoit le fichier et analyse ses métadonnées avant les actions du flow.",
+      "kind": "input",
+      "mediaType": "audio",
+      "supportedFlowMediaTypes": [
+        "music"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Continuer sur ce chemin."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": []
+      },
+      "requiredTools": [],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "inputs"
+    },
+    {
+      "id": "base-input-subtitles",
+      "version": "1.0.0",
+      "name": "Fichier de sous-titres",
+      "description": "Reçoit le fichier et analyse ses métadonnées avant les actions du flow.",
+      "kind": "input",
+      "mediaType": "subtitles",
+      "supportedFlowMediaTypes": [
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Continuer sur ce chemin."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": []
+      },
+      "requiredTools": [],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "inputs"
+    },
+    {
+      "id": "base-script",
+      "version": "1.0.0",
+      "name": "Exécuter un script",
+      "description": "Prépare les variables et les règles du flow ; les métadonnées sont disponibles après analyse.",
+      "kind": "script",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Continuer sur ce chemin."
+        },
+        {
+          "id": "skipped",
+          "label": "Ignoré",
+          "description": "Aucun traitement nécessaire."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Traiter l’échec de cette étape."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "scriptReference",
+            "label": "Script de la bibliothèque",
+            "type": "script-reference",
+            "description": "Choisissez une version publiée. Son code est copié dans le flow et reste figé avec sa version.",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "language",
+            "label": "Langage",
+            "type": "select",
+            "defaultValue": "javascript",
+            "options": [
+              {
+                "value": "javascript",
+                "label": "JavaScript"
+              },
+              {
+                "value": "python",
+                "label": "Python"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "code",
+            "label": "Code du script",
+            "type": "text",
+            "multiline": true,
+            "required": true,
+            "description": "Le script disposera du contexte média et des services du moteur. Son exécution attend le contrat des scripts.",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "timeoutSeconds",
+            "label": "Durée maximale (secondes)",
+            "type": "number",
+            "defaultValue": 60,
+            "min": 1,
+            "max": 86400,
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "useTools",
+            "label": "Outils média (tools)",
+            "type": "boolean",
+            "defaultValue": false,
+            "description": "Ajoute l’aide tools au script : tools.run('ffmpeg', [...]) lance ffmpeg, ffprobe, mkvmerge, mkvextract, mkvpropedit, mediainfo ou magick dans le dossier de travail isolé du script. Exige un worker qui annonce script-tools.",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "scripts"
+    },
+    {
+      "id": "base-prepare-processing",
+      "version": "1.0.0",
+      "name": "Préparer le traitement",
+      "description": "Initialise un plan média sans modifier le fichier courant.",
+      "kind": "preparation",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "music"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Continuer sur ce chemin."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Traiter l’échec de cette étape."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "tool",
+            "label": "Outil",
+            "type": "select",
+            "defaultValue": "ffmpeg",
+            "options": [
+              {
+                "value": "ffmpeg",
+                "label": "FFmpeg"
+              },
+              {
+                "value": "mkvtoolnix",
+                "label": "MKVToolNix",
+                "supportedFlowMediaTypes": [
+                  "video"
+                ]
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "preserveUnchangedTracks",
+            "label": "Conserver les pistes non modifiées",
+            "type": "boolean",
+            "defaultValue": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "orchestration"
+    },
+    {
+      "id": "base-execute-processing",
+      "version": "1.0.0",
+      "name": "Exécuter le traitement",
+      "description": "Exécute le plan sur une sortie temporaire, puis analyse et valide le résultat.",
+      "kind": "execution",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "music"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Continuer sur ce chemin."
+        },
+        {
+          "id": "skipped",
+          "label": "Ignoré",
+          "description": "Aucun traitement nécessaire."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Traiter l’échec de cette étape."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "forceProcessing",
+            "label": "Traiter même si le média est conforme",
+            "type": "boolean",
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "orchestration"
+    },
+    {
+      "id": "base-defer-processing",
+      "version": "1.0.0",
+      "name": "Reporter le traitement",
+      "description": "Reporte la tâche et libère le worker jusqu’à la prochaine tentative.",
+      "kind": "terminal",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "delayMinutes",
+            "label": "Délai (minutes)",
+            "type": "number",
+            "defaultValue": 2,
+            "min": 1,
+            "max": 1440,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "reason",
+            "label": "Motif du report",
+            "type": "text",
+            "required": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "orchestration"
+    },
+    {
+      "id": "base-complete-flow",
+      "version": "1.0.0",
+      "name": "Terminer le flow",
+      "description": "Termine ce chemin avec un résultat explicite. La publication reste contrôlée par le moteur.",
+      "kind": "terminal",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "result",
+            "label": "Résultat",
+            "type": "select",
+            "defaultValue": "unchanged",
+            "options": [
+              {
+                "value": "unchanged",
+                "label": "Déjà conforme"
+              },
+              {
+                "value": "success",
+                "label": "Traitement terminé"
+              },
+              {
+                "value": "failed",
+                "label": "Échec"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "message",
+            "label": "Message pour l’historique",
+            "type": "text",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "orchestration"
+    },
+    {
+      "id": "base-variable",
+      "version": "1.0.0",
+      "name": "Définir une variable",
+      "description": "Crée ou met à jour une valeur réutilisable dans le flow.",
+      "kind": "variable",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Le composant a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Le composant n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "name",
+            "label": "Nom de la variable",
+            "type": "text",
+            "required": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "value",
+            "label": "Valeur",
+            "type": "text",
+            "required": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "variables"
+    },
+    {
+      "id": "base-wait",
+      "version": "1.1.0",
+      "name": "Attendre",
+      "description": "Met le flow en attente sans occuper de worker, puis reprend à l’étape suivante quand la condition est remplie. Le média reste réservé. Sans sortie « Délai dépassé » reliée, un délai dépassé fait échouer l’exécution.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "resumed",
+          "label": "Reprise",
+          "description": "La condition est remplie ; le flow continue."
+        },
+        {
+          "id": "timeout",
+          "label": "Délai dépassé",
+          "description": "Le délai maximal est atteint. Si cette sortie n’est pas reliée, l’exécution échoue."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "mode",
+            "label": "Reprendre quand",
+            "type": "select",
+            "defaultValue": "timer",
+            "options": [
+              {
+                "value": "timer",
+                "label": "Un délai est écoulé"
+              },
+              {
+                "value": "nodeState",
+                "label": "Un worker change d’état"
+              },
+              {
+                "value": "workload",
+                "label": "La charge de travail passe un seuil"
+              },
+              {
+                "value": "block",
+                "label": "Une condition de plugin est remplie"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "delayMinutes",
+            "label": "Délai (minutes)",
+            "type": "number",
+            "description": "Mode « délai ».",
+            "defaultValue": 30,
+            "min": 1,
+            "max": 10080,
+            "importance": "basic",
+            "section": "Paramètres",
+            "visibleWhenFieldId": "mode",
+            "visibleWhenValue": "timer"
+          },
+          {
+            "id": "nodeId",
+            "label": "Identifiant du worker",
+            "type": "text",
+            "description": "Mode « worker ». Vide : n’importe quel worker (obligatoire pour « hors ligne »).",
+            "importance": "basic",
+            "section": "Paramètres",
+            "visibleWhenFieldId": "mode",
+            "visibleWhenValue": "nodeState",
+            "editor": "node"
+          },
+          {
+            "id": "nodeStatus",
+            "label": "État attendu du worker",
+            "type": "select",
+            "defaultValue": "online",
+            "options": [
+              {
+                "value": "online",
+                "label": "En ligne"
+              },
+              {
+                "value": "offline",
+                "label": "Hors ligne"
+              },
+              {
+                "value": "idle",
+                "label": "Libre (capacité disponible)"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres",
+            "visibleWhenFieldId": "mode",
+            "visibleWhenValue": "nodeState"
+          },
+          {
+            "id": "workloadMetric",
+            "label": "Mesure",
+            "type": "select",
+            "defaultValue": "running",
+            "options": [
+              {
+                "value": "running",
+                "label": "Tâches en cours"
+              },
+              {
+                "value": "queued",
+                "label": "Tâches en file"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres",
+            "visibleWhenFieldId": "mode",
+            "visibleWhenValue": "workload"
+          },
+          {
+            "id": "workloadScope",
+            "label": "Portée",
+            "type": "select",
+            "defaultValue": "cluster",
+            "options": [
+              {
+                "value": "cluster",
+                "label": "Tout le cluster"
+              },
+              {
+                "value": "library",
+                "label": "Bibliothèque du fichier"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres",
+            "visibleWhenFieldId": "mode",
+            "visibleWhenValue": "workload"
+          },
+          {
+            "id": "workloadOperator",
+            "label": "Comparaison",
+            "type": "select",
+            "defaultValue": "lte",
+            "options": [
+              {
+                "value": "lte",
+                "label": "Inférieur ou égal au seuil"
+              },
+              {
+                "value": "gte",
+                "label": "Supérieur ou égal au seuil"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres",
+            "visibleWhenFieldId": "mode",
+            "visibleWhenValue": "workload"
+          },
+          {
+            "id": "workloadThreshold",
+            "label": "Seuil",
+            "type": "number",
+            "description": "Mode « charge de travail ».",
+            "defaultValue": 0,
+            "min": 0,
+            "max": 100000,
+            "importance": "basic",
+            "section": "Paramètres",
+            "visibleWhenFieldId": "mode",
+            "visibleWhenValue": "workload"
+          },
+          {
+            "id": "blockNodeId",
+            "label": "Bloc à surveiller",
+            "type": "text",
+            "description": "Mode « condition ». Identifiant d’une condition de plugin du flow (par exemple « Lecture en cours »). Elle est réévaluée par un worker éligible.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "visibleWhenFieldId": "mode",
+            "visibleWhenValue": "block",
+            "editor": "flow-node"
+          },
+          {
+            "id": "blockOutputs",
+            "label": "Sorties qui valent « remplie »",
+            "type": "text",
+            "description": "Mode « condition ». Sorties du bloc séparées par des virgules, par exemple idle.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "visibleWhenFieldId": "mode",
+            "visibleWhenValue": "block"
+          },
+          {
+            "id": "pollSeconds",
+            "label": "Intervalle de vérification (secondes)",
+            "type": "number",
+            "description": "Fréquence de réévaluation des conditions autres qu’un délai.",
+            "defaultValue": 60,
+            "min": 15,
+            "max": 3600,
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "maxWaitMinutes",
+            "label": "Attente maximale (minutes)",
+            "type": "number",
+            "description": "Vide : attente illimitée.",
+            "min": 1,
+            "max": 43200,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "mediaPolicy",
+            "label": "Média pendant l’attente",
+            "type": "select",
+            "defaultValue": "keep",
+            "options": [
+              {
+                "value": "keep",
+                "label": "Suivre la politique de la bibliothèque"
+              },
+              {
+                "value": "beside",
+                "label": "Créer une copie à côté (source jamais remplacée)"
+              },
+              {
+                "value": "overwrite",
+                "label": "Écraser le média en cours (si la bibliothèque l’autorise)"
+              }
+            ],
+            "description": "Le média reste réservé pendant l’attente. Le choix s’applique à la publication du résultat : l’écrasement passe par la politique de remplacement de la bibliothèque (sauvegarde, période de grâce). Réglage historique : privilégiez la politique de bibliothèque.",
+            "importance": "advanced",
+            "section": "Compatibilité : publication",
+            "legacyOnly": true
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "orchestration"
+    },
+    {
+      "id": "base-disk-lock",
+      "version": "1.5.0",
+      "name": "Verrou de disque",
+      "description": "Prend le verrou d’un disque déclaré (nom libre, par exemple « nas-1 »). Une seule exécution à la fois par disque ; si un autre traitement le tient, la sortie « Occupé » est suivie sans attendre ni bloquer le worker (à relier à « Reporter le traitement » ou « Attendre »). Le verrou suit le bail de l’exécution et est libéré à la fin, à l’attente, au relais ou par « Libérer le disque ».",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "acquired",
+          "label": "Verrou pris",
+          "description": "Le disque est réservé pour cette exécution."
+        },
+        {
+          "id": "busy",
+          "label": "Occupé",
+          "description": "Une autre exécution tient ce disque ; aucun verrou n’est pris."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Le nom de disque est invalide."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "disk",
+            "label": "Disque",
+            "type": "text",
+            "defaultValue": "",
+            "description": "Nom du disque : lettres minuscules, chiffres, points, tirets ou espaces (64 caractères au plus).",
+            "required": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "files"
+    },
+    {
+      "id": "base-disk-unlock",
+      "version": "1.5.0",
+      "name": "Libérer le disque",
+      "description": "Libère le verrou d’un disque tenu par cette exécution. Sans effet si elle ne le tient pas.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Le disque est libre pour cette exécution."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Le nom de disque est invalide."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "disk",
+            "label": "Disque",
+            "type": "text",
+            "defaultValue": "",
+            "description": "Nom du disque pris plus tôt par « Verrou de disque ».",
+            "required": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "files"
+    },
+    {
+      "id": "base-publish-result",
+      "version": "1.8.0",
+      "name": "Publier le résultat",
+      "description": "Publie le résultat du traitement dans la bibliothèque maintenant, au lieu d’attendre la fin du flow, puis continue : les blocs suivants (Plex, Radarr, Sonarr, scripts…) s’exécutent une fois le média en place. Se place après « Exécuter le traitement ». Publication sans écrasement, ou remplacement de la source si la bibliothèque a activé sa politique de remplacement ; la garde de publication (lecture Plex) s’applique comme à la fin d’un flow. Sans ce bloc, le flow publie à sa fin, comme avant. Un échec d’un bloc suivant ne défait pas la publication.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "published",
+          "label": "Publié",
+          "description": "Le résultat est en place dans la bibliothèque ; le flow continue."
+        },
+        {
+          "id": "unchanged",
+          "label": "Rien à publier",
+          "description": "Le média n’a pas été modifié par le flow : aucune publication."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "La publication n’a pas pu être demandée (plan non exécuté, résultat déjà publié)."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": []
+      },
+      "requiredTools": [],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [
+        "1.8.0",
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "files"
+    },
+    {
+      "id": "base-ffmpeg-builder-start",
+      "version": "1.0.0",
+      "name": "Début FFmpeg",
+      "description": "Ouvre une préparation FFmpeg sur le fichier courant. Les réglages et conditions suivants ne produisent aucun nouveau média avant Exécuter FFmpeg.",
+      "kind": "preparation",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "music"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Continuer sur ce chemin."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Traiter l’échec de cette étape."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "preserveUnchangedTracks",
+            "label": "Conserver les pistes non modifiées",
+            "type": "boolean",
+            "defaultValue": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.9.0",
+        "1.10.0"
+      ],
+      "mediaEffect": "readOnly",
+      "category": "encoding"
+    },
+    {
+      "id": "base-ffmpeg-builder-execute",
+      "version": "1.0.0",
+      "name": "Exécuter FFmpeg",
+      "description": "Exécute la préparation en une commande compatible. Après validation, la sortie et ses nouvelles métadonnées deviennent le fichier courant ; en cas d’erreur, l’entrée validée est conservée.",
+      "kind": "execution",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "music"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Continuer sur ce chemin."
+        },
+        {
+          "id": "skipped",
+          "label": "Ignoré",
+          "description": "Aucun traitement nécessaire."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Traiter l’échec de cette étape."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": []
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffmpeg",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        },
+        {
+          "toolId": "ffprobe",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "encoding"
+    },
+    {
+      "id": "base-assemble-media",
+      "version": "1.0.0",
+      "name": "Assembler le résultat MKV",
+      "description": "Conserve toutes les pistes audio et sous-titres d’origine. La préparation des sous-titres, l’ajout de polices et le renommage des pistes sont des opérations facultatives dans une même sortie temporaire.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Assemblé",
+          "description": "Le nouveau fichier courant est validé."
+        },
+        {
+          "id": "unchanged",
+          "label": "Inchangé",
+          "description": "Aucun changement nécessaire."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "La source et le dernier fichier validé sont préservés."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "manageSubtitles",
+            "label": "Préparer les sous-titres",
+            "type": "boolean",
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Opérations",
+            "description": "Désactivé par défaut : les sous-titres d’origine sont copiés tels quels avec leurs langues. Activez-le uniquement pour convertir, uniformiser ou dédupliquer les pistes."
+          },
+          {
+            "id": "addFonts",
+            "label": "Ajouter les polices du profil",
+            "type": "boolean",
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Opérations",
+            "description": "Ajoute uniquement les polices explicitement configurées dans ce flow ou sa ressource sélectionnée."
+          },
+          {
+            "id": "nameTracks",
+            "label": "Nommer les pistes",
+            "type": "boolean",
+            "defaultValue": true,
+            "importance": "basic",
+            "section": "Opérations"
+          },
+          {
+            "id": "styleProfile",
+            "label": "Profil de style",
+            "type": "select",
+            "defaultValue": "crunchyroll",
+            "options": [
+              {
+                "value": "crunchyroll",
+                "label": "Crunchyroll (proportionnel, lecture seule)"
+              },
+              {
+                "value": "none",
+                "label": "Aucun : ne pas toucher aux styles"
+              },
+              {
+                "value": "custom",
+                "label": "Style personnalisé (instantané du flow)"
+              }
+            ],
+            "description": "Le profil intégré est un réglage initial en lecture seule. Les polices qu’il utilise (Trebuchet MS Gras, Arial Gras) s’ajoutent avec le bloc « Polices ».",
+            "importance": "advanced",
+            "section": "Sous-titres",
+            "requiresPluginVersion": "1.2.0",
+            "requiresPluginVersionValue": "custom",
+            "visibleWhenFieldId": "manageSubtitles",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "convertSrt",
+            "label": "Convertir les SRT en ASS",
+            "type": "boolean",
+            "defaultValue": true,
+            "description": "Applique le profil aux pistes SRT, WebVTT et mov_text.",
+            "importance": "advanced",
+            "section": "Sous-titres",
+            "visibleWhenFieldId": "manageSubtitles",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "upgradeAss",
+            "label": "Mettre à niveau les ASS simples",
+            "type": "boolean",
+            "defaultValue": true,
+            "description": "Remplace l’en-tête et les quatre styles communs ; les événements sont conservés.",
+            "importance": "advanced",
+            "section": "Sous-titres",
+            "visibleWhenFieldId": "manageSubtitles",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "removeDuplicates",
+            "label": "Retirer les doublons",
+            "type": "boolean",
+            "defaultValue": true,
+            "description": "Une piste dont le texte et les horaires (à 0,1 s près) sont inclus dans une autre piste de même langue et mêmes marqueurs est retirée.",
+            "importance": "advanced",
+            "section": "Sous-titres",
+            "visibleWhenFieldId": "manageSubtitles",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "inferForced",
+            "label": "Déduire les pistes forcées",
+            "type": "boolean",
+            "defaultValue": true,
+            "description": "Une piste courte (10 % ou moins) dont le texte est à 90 % ou plus dans la plus complète de même langue est marquée forcée.",
+            "importance": "advanced",
+            "section": "Sous-titres",
+            "visibleWhenFieldId": "manageSubtitles",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "setTitles",
+            "label": "Nommer les pistes",
+            "type": "boolean",
+            "defaultValue": true,
+            "description": "Désactivez-le si le bloc « Noms de pistes » nomme les pistes ensuite.",
+            "importance": "advanced",
+            "section": "Sous-titres",
+            "visibleWhenFieldId": "manageSubtitles",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "frenchDefault",
+            "label": "Sous-titre français par défaut",
+            "type": "boolean",
+            "defaultValue": true,
+            "description": "Quand l’unique audio de référence n’est pas français, le sous-titre français (complet de préférence, non forcé) est marqué par défaut.",
+            "importance": "advanced",
+            "section": "Sous-titres",
+            "visibleWhenFieldId": "manageSubtitles",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "fontFamily",
+            "label": "Famille de police",
+            "type": "text",
+            "importance": "advanced",
+            "section": "Sous-titres",
+            "defaultValue": "Trebuchet MS",
+            "visibleWhenFieldId": "manageSubtitles",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "fontSize",
+            "label": "Taille sur une référence de 360 lignes",
+            "type": "number",
+            "importance": "advanced",
+            "section": "Sous-titres",
+            "min": 6,
+            "max": 80,
+            "defaultValue": 23,
+            "visibleWhenFieldId": "manageSubtitles",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "fontOutline",
+            "label": "Contour sur 360 lignes",
+            "type": "number",
+            "importance": "advanced",
+            "section": "Sous-titres",
+            "min": 0,
+            "max": 10,
+            "defaultValue": 2.5,
+            "visibleWhenFieldId": "manageSubtitles",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "fontMargin",
+            "label": "Marge basse sur 360 lignes",
+            "type": "number",
+            "importance": "advanced",
+            "section": "Sous-titres",
+            "min": 0,
+            "max": 100,
+            "defaultValue": 20,
+            "visibleWhenFieldId": "manageSubtitles",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "fontSet",
+            "label": "Jeu de polices",
+            "type": "text",
+            "defaultValue": "Crunchyroll",
+            "description": "Nom du sous-dossier du dossier de polices du nœud.",
+            "importance": "advanced",
+            "section": "Polices",
+            "editor": "font-set",
+            "visibleWhenFieldId": "addFonts",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "resource",
+            "label": "Ressource de polices",
+            "type": "text",
+            "defaultValue": "",
+            "description": "Ressource du catalogue du cluster, au format « identifiant:version ». Le nœud récupère les polices automatiquement et toutes sont ajoutées : le jeu et la liste ci-dessous sont alors ignorés. Vide : utiliser le jeu de polices du nœud.",
+            "requiresPluginVersion": "1.3.0",
+            "importance": "advanced",
+            "section": "Polices",
+            "editor": "resource",
+            "visibleWhenFieldId": "addFonts",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "fonts",
+            "label": "Polices",
+            "type": "text",
+            "defaultValue": "TrebuchetMSBold.ttf, TrebuchetMSBoldItalic.ttf, ArialBold.ttf",
+            "description": "Noms de fichiers séparés par des virgules. Vide : toutes les polices (.ttf, .otf, .ttc) du jeu. Ignoré quand une ressource est choisie.",
+            "importance": "advanced",
+            "section": "Polices",
+            "visibleWhenFieldId": "addFonts",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "audioTemplate",
+            "label": "Modèle des pistes audio",
+            "type": "text",
+            "defaultValue": "{language} {variant} / {codec} / {layout} / {flags}",
+            "description": "Jetons : {language}, {variant}, {codec}, {layout}, {flags}. Les segments séparés par « / » qui restent vides sont retirés.",
+            "importance": "advanced",
+            "section": "Noms des pistes",
+            "visibleWhenFieldId": "nameTracks",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "subtitleTemplate",
+            "label": "Modèle des sous-titres",
+            "type": "text",
+            "defaultValue": "{language} {variant} / {codec} / {flags}",
+            "description": "Mêmes jetons ; {layout} reste vide.",
+            "importance": "advanced",
+            "section": "Noms des pistes",
+            "visibleWhenFieldId": "nameTracks",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "singleDefaultAudio",
+            "label": "Une seule piste audio par défaut",
+            "type": "boolean",
+            "defaultValue": true,
+            "importance": "advanced",
+            "section": "Noms des pistes",
+            "visibleWhenFieldId": "nameTracks",
+            "visibleWhenValue": "true"
+          },
+          {
+            "id": "defaultAudioLanguage",
+            "label": "Langue de la piste audio par défaut",
+            "type": "text",
+            "description": "Code de langue (fr, en, ja…). Vide : conserver la piste déjà par défaut, sinon la première hors commentaire.",
+            "importance": "advanced",
+            "section": "Noms des pistes",
+            "editor": "language",
+            "visibleWhenFieldId": "nameTracks",
+            "visibleWhenValue": "true"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffmpeg",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        },
+        {
+          "toolId": "ffprobe",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        },
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [
+        "1.9.0",
+        "1.10.0"
+      ],
+      "category": "containers"
+    },
+    {
+      "id": "base-condition",
+      "version": "1.0.0",
+      "name": "Tester une condition",
+      "description": "Évalue une règle et dirige le flow selon le résultat.",
+      "kind": "condition",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "yes",
+          "label": "Oui",
+          "description": "La condition est satisfaite."
+        },
+        {
+          "id": "no",
+          "label": "Non",
+          "description": "La condition n’est pas satisfaite."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "La condition n’a pas pu être évaluée."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "expression",
+            "type": "text",
+            "label": "Expression",
+            "description": "Règle à évaluer pour choisir la sortie.",
+            "placeholder": "Ex. codec vidéo = HEVC",
+            "required": true,
+            "multiline": true
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.10.0"
+      ]
+    }
+  ],
+  "requiredToolPackages": [
+    {
+      "toolPackageId": "ffmpeg",
+      "minimumVersion": "6.1.1"
+    },
+    {
+      "toolPackageId": "mkvtoolnix",
+      "minimumVersion": "82.0.0"
+    },
+    {
+      "toolPackageId": "mediainfo",
+      "minimumVersion": "24.1.1"
+    },
+    {
+      "toolPackageId": "imagemagick",
+      "minimumVersion": "6.9.12"
+    }
+  ],
+  "runtime": {
+    "type": "native",
+    "entrypoint": ""
+  }
+}

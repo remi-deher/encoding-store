@@ -1,0 +1,539 @@
+{
+  "contractVersion": 1,
+  "id": "nodes",
+  "version": "1.8.1",
+  "name": "Nœuds",
+  "supportedHostContractVersions": [
+    1
+  ],
+  "components": [
+    {
+      "id": "nodes-run-on-node",
+      "version": "1.0.0",
+      "name": "Exécuter sur un nœud ou un groupe",
+      "description": "Contraint le worker du segment courant selon un nœud, un groupe et des étiquettes. Les critères se cumulent. Sans candidat disponible, le traitement attend.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Le traitement a été attribué au nœud demandé."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "targetNodeId",
+            "type": "text",
+            "label": "Identifiant du nœud (facultatif)",
+            "description": "Copiez l’identifiant depuis la fiche du nœud.",
+            "placeholder": "UUID du worker",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "node"
+          },
+          {
+            "id": "targetGroupId",
+            "type": "text",
+            "label": "Identifiant du groupe (facultatif)",
+            "description": "Le worker doit appartenir à ce groupe manuel ou automatique.",
+            "placeholder": "UUID du groupe",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "node-group"
+          },
+          {
+            "id": "requiredLabels",
+            "type": "text",
+            "label": "Étiquettes requises (facultatif)",
+            "description": "Toutes les conditions doivent correspondre. Syntaxe : gpu ou gpu=nvidia,region=eu.",
+            "placeholder": "gpu=nvidia,region=eu",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "labels"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0"
+      ],
+      "category": "cluster"
+    },
+    {
+      "id": "nodes-require-capability",
+      "version": "1.0.0",
+      "name": "Exiger une capacité du worker",
+      "description": "Exige un outil, une version ou une accélération du worker du segment courant, jusqu’au prochain relais.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Le worker attribué satisfait les capacités demandées."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "toolId",
+            "type": "text",
+            "label": "Identifiant de l’outil",
+            "description": "Ex. ffmpeg, imagemagick, python ou javascript.",
+            "required": true,
+            "placeholder": "ffmpeg",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "minimumVersion",
+            "type": "text",
+            "label": "Version minimale",
+            "description": "Facultatif. Comparaison de version numérique, par exemple 7.1.0.",
+            "placeholder": "7.1.0",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "requiredCapability",
+            "type": "text",
+            "label": "Accélération requise",
+            "description": "Facultatif. Valeur déclarée par l’outil sur le worker, par exemple nvenc ou vaapi.",
+            "placeholder": "nvenc",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "requiredEncoder",
+            "type": "text",
+            "label": "Encodeur ou codec requis",
+            "description": "Facultatif. Exige un codec (ex. av1, hevc, h264) ou un encodeur précis (ex. libsvtav1, hevc_nvenc) disponible sur le worker.",
+            "placeholder": "av1",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "encoderKind",
+            "type": "select",
+            "label": "Type d’encodage",
+            "description": "Facultatif, avec « Encodeur ou codec requis ». Matériel : seuls les encodeurs matériels utilisables sur le worker comptent (QSV, NVENC, VAAPI), jamais le CPU. CPU : seuls les encodeurs logiciels. Sans encodeur renseigné, tout encodeur du type choisi convient. « Selon le profil d’encodage du flow » exige un encodeur utilisable parmi les cibles du profil du bloc vidéo (le codec et l’encodeur ci-dessus sont alors ignorés).",
+            "defaultValue": "any",
+            "requiresPluginVersion": "1.6.0",
+            "requiresPluginVersionValue": "profile",
+            "options": [
+              {
+                "value": "any",
+                "label": "Peu importe"
+              },
+              {
+                "value": "hardware",
+                "label": "Matériel (GPU), pas le CPU"
+              },
+              {
+                "value": "cpu",
+                "label": "CPU (logiciel)"
+              },
+              {
+                "value": "profile",
+                "label": "Selon le profil d’encodage du flow"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0"
+      ],
+      "category": "cluster"
+    },
+    {
+      "id": "nodes-handoff",
+      "version": "1.0.0",
+      "name": "Transférer la suite à un autre nœud",
+      "description": "Cède la suite à un worker, ou à un serveur via une réception inactive et une activation signée. Le checkpoint et les artefacts vérifiés sont conservés.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite sur le nouveau worker",
+          "description": "Le worker destinataire reprend à ce bloc."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "mode",
+            "type": "select",
+            "label": "Destination",
+            "defaultValue": "inherit",
+            "inline": true,
+            "options": [
+              {
+                "value": "inherit",
+                "label": "Configuration du plugin / du flow"
+              },
+              {
+                "value": "eligible",
+                "label": "Un autre worker éligible"
+              },
+              {
+                "value": "node",
+                "label": "Un nœud précis"
+              },
+              {
+                "value": "selector",
+                "label": "Un groupe et/ou des étiquettes"
+              },
+              {
+                "value": "server",
+                "label": "Un autre serveur du cluster"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "targetNodeId",
+            "type": "text",
+            "label": "Identifiant du nœud",
+            "description": "Facultatif : remplace le nœud défini dans la configuration du plugin ou du flow. Le worker courant ne peut pas être sa propre cible.",
+            "placeholder": "UUID du worker",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "node"
+          },
+          {
+            "id": "targetGroupId",
+            "type": "text",
+            "label": "Identifiant du groupe",
+            "description": "Le destinataire doit appartenir à ce groupe.",
+            "placeholder": "UUID du groupe",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "node-group"
+          },
+          {
+            "id": "requiredLabels",
+            "type": "text",
+            "label": "Étiquettes requises",
+            "description": "Toutes les conditions doivent correspondre : gpu=nvidia,region=eu.",
+            "placeholder": "gpu=nvidia,region=eu",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "labels"
+          },
+          {
+            "id": "targetServerPeerId",
+            "type": "text",
+            "label": "Serveur destinataire",
+            "description": "Identité de maillage du serveur. La réception reste inactive jusqu’à l’activation journalisée.",
+            "placeholder": "UUID du serveur",
+            "importance": "basic",
+            "section": "Paramètres",
+            "requiresPluginVersion": "1.8.0"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.1.0",
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0"
+      ],
+      "category": "cluster"
+    },
+    {
+      "id": "nodes-retry-on-worker-loss",
+      "version": "1.0.0",
+      "name": "Relancer sur perte du worker",
+      "description": "Autorise un nombre borné de nouvelles tentatives depuis le début du flow si un worker perd sa connexion. Les tentatives ont chacune leurs propres sorties.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "La règle de relance est activée pour ce flow."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "maxRetries",
+            "type": "number",
+            "label": "Nombre maximal de relances",
+            "defaultValue": 1,
+            "min": 1,
+            "max": 10,
+            "inline": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "targetNodeId",
+            "type": "text",
+            "label": "Worker précis (facultatif)",
+            "placeholder": "UUID du worker",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "node"
+          },
+          {
+            "id": "targetGroupId",
+            "type": "text",
+            "label": "Groupe de workers (facultatif)",
+            "placeholder": "UUID du groupe",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "node-group"
+          },
+          {
+            "id": "requiredLabels",
+            "type": "text",
+            "label": "Étiquettes requises (facultatif)",
+            "placeholder": "gpu=nvidia,region=eu",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "labels"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.2.0",
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0"
+      ],
+      "category": "cluster"
+    },
+    {
+      "id": "nodes-require-direct-access",
+      "version": "1.0.0",
+      "name": "Exiger un accès direct à la bibliothèque",
+      "description": "Contraint le worker du segment courant à posséder un accès direct au média de la bibliothèque (chemin local). Les workers avec accès par transfert ne sont pas éligibles pour ce segment.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Le traitement a été attribué à un nœud disposant d’un accès direct au média."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "mode",
+            "type": "select",
+            "label": "Mode d’accès",
+            "description": "Contraint l’accès direct au média pour le segment courant.",
+            "defaultValue": "strict",
+            "inline": true,
+            "options": [
+              {
+                "value": "strict",
+                "label": "Strict : accès direct obligatoire"
+              },
+              {
+                "value": "prefer",
+                "label": "Préférence : accès direct si disponible"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.3.0",
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0"
+      ],
+      "category": "cluster"
+    },
+    {
+      "id": "nodes-library-access",
+      "version": "1.4.0",
+      "name": "Bibliothèque sur ce nœud",
+      "description": "Teste si le nœud qui exécute ce bloc a la bibliothèque du fichier montée directement (chemin local). « Oui » : ce nœud traite le fichier sur place. « Non » : le fichier lui est arrivé par transfert ; on peut le confier à un nœud capable avec « Relais vers un autre worker ». Le nœud d'accès reste celui de la première attribution, même après un relais.",
+      "kind": "condition",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "yes",
+          "label": "Oui",
+          "description": "Ce nœud a la bibliothèque en accès direct."
+        },
+        {
+          "id": "no",
+          "label": "Non",
+          "description": "Ce nœud n'a pas la bibliothèque en accès direct."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "requireProfileEncoder",
+            "type": "boolean",
+            "label": "Et pouvoir encoder avec le profil du flow",
+            "description": "Si coché, « Oui » exige aussi que ce nœud ait un encodeur utilisable du profil du bloc vidéo ; sinon il répond « Non » et le fichier peut être confié à un nœud capable. Un nœud sans encodeur n'est alors pas écarté du flow.",
+            "defaultValue": false,
+            "requiresPluginVersion": "1.7.0",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.4.0",
+        "1.5.0",
+        "1.6.0",
+        "1.7.0",
+        "1.8.0"
+      ],
+      "category": "cluster"
+    }
+  ],
+  "configurationSchema": {
+    "version": 1,
+    "fields": [
+      {
+        "id": "mode",
+        "type": "select",
+        "label": "Destination par défaut",
+        "description": "Sans worker disponible, le relais reste en attente.",
+        "defaultValue": "eligible",
+        "options": [
+          {
+            "value": "eligible",
+            "label": "Un autre worker éligible"
+          },
+          {
+            "value": "node",
+            "label": "Un nœud précis"
+          },
+          {
+            "value": "selector",
+            "label": "Un groupe et/ou des étiquettes"
+          }
+        ]
+      },
+      {
+        "id": "targetNodeId",
+        "type": "text",
+        "label": "Identifiant du nœud par défaut",
+        "description": "Utilisé lorsque la destination est un nœud précis. Copiez son identifiant depuis sa fiche.",
+        "placeholder": "UUID du worker"
+      },
+      {
+        "id": "targetGroupId",
+        "type": "text",
+        "label": "Identifiant du groupe par défaut",
+        "description": "Utilisé lorsque la destination est filtrée par groupe.",
+        "placeholder": "UUID du groupe"
+      },
+      {
+        "id": "requiredLabels",
+        "type": "text",
+        "label": "Étiquettes requises par défaut",
+        "description": "Toutes les étiquettes doivent correspondre.",
+        "placeholder": "gpu=nvidia,region=eu"
+      }
+    ]
+  },
+  "requiredToolPackages": [],
+  "runtime": {
+    "type": "native",
+    "entrypoint": ""
+  }
+}

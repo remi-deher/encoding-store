@@ -12,7 +12,7 @@ The application downloads versioned archives listed in [`repository.json`](repos
 
 Process plugins run in a separate Landlock confined process. Native media component packages contain only declarative manifests; their implementations remain in the Encoding engine and are restricted to its allowlisted component families. No package is preinstalled by the engine.
 
-Current process integrations are Plex, Sonarr, Radarr, and Jellyfin. Native component manifests for video, audio, subtitles, MKV, images, probing, and AI are also published here. Linux x64 packages are published for FFmpeg/FFprobe, MKVToolNix, MediaInfo, and ImageMagick, built from Ubuntu 24.04 Noble amd64 packages. Their source package versions and Debian archive hashes are recorded in [`tools/ubuntu-noble-lock.json`](tools/ubuntu-noble-lock.json). The engine image retains the compatible runtime libraries, while the executable packages are installed from this Store. Other platforms are not published yet.
+Current process integrations are Plex, Sonarr, Radarr, and Jellyfin. Native component manifests for base flows, node placement, conditions, video, audio, subtitles, MKV, images, probing, and AI are also published here. Linux x64 packages are published for FFmpeg/FFprobe, MKVToolNix, MediaInfo, and ImageMagick, built from Ubuntu 24.04 Noble amd64 packages. Their source package versions and Debian archive hashes are recorded in [`tools/ubuntu-noble-lock.json`](tools/ubuntu-noble-lock.json). The engine image retains the compatible runtime libraries, while the executable packages are installed from this Store. Other platforms are not published yet.
 
 Run the plugin source checks with:
 

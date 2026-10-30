@@ -4,24 +4,24 @@
   "description": "Catalogue public de plugins Encoding et de paquets d’outils média partagés.",
   "categories": [
     {
+      "id": "ai",
+      "name": "IA"
+    },
+    {
       "id": "arr",
       "name": "Gestionnaires *ARR"
-    },
-    {
-      "id": "media-servers",
-      "name": "Serveurs média"
-    },
-    {
-      "id": "video",
-      "name": "Vidéo"
     },
     {
       "id": "audio",
       "name": "Audio"
     },
     {
-      "id": "subtitles",
-      "name": "Sous-titres"
+      "id": "cluster",
+      "name": "Cluster et placement"
+    },
+    {
+      "id": "conditions",
+      "name": "Conditions de flow"
     },
     {
       "id": "containers",
@@ -32,12 +32,24 @@
       "name": "Images"
     },
     {
+      "id": "media-servers",
+      "name": "Serveurs média"
+    },
+    {
       "id": "probe",
       "name": "Analyse média"
     },
     {
-      "id": "ai",
-      "name": "IA"
+      "id": "subtitles",
+      "name": "Sous-titres"
+    },
+    {
+      "id": "utilities",
+      "name": "Composants fondamentaux"
+    },
+    {
+      "id": "video",
+      "name": "Vidéo"
     }
   ],
   "plugins": [
@@ -78,6 +90,36 @@
           "version": "1.1.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/audio/1.1.1/1.1.1.zip",
           "sha256": "1341afa6a89a4a5a212fd5d7b8b4c98d95c806c7aaec5ba27fd4e17fd3025362"
+        }
+      ]
+    },
+    {
+      "id": "base",
+      "name": "Workflow base",
+      "summary": "Composants base natifs du moteur, distribués depuis le Store.",
+      "category": "utilities",
+      "requiredTools": [],
+      "latestVersion": "1.10.1",
+      "versions": [
+        {
+          "version": "1.10.1",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/base/1.10.1/1.10.1.zip",
+          "sha256": "c09a3c13a40bfa11c32315805f1c6053d5f233ee8ed3b681ffaadbf150d243d9"
+        }
+      ]
+    },
+    {
+      "id": "conditions",
+      "name": "Évaluation des conditions média",
+      "summary": "Composants conditions natifs du moteur, distribués depuis le Store.",
+      "category": "conditions",
+      "requiredTools": [],
+      "latestVersion": "1.2.1",
+      "versions": [
+        {
+          "version": "1.2.1",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/conditions/1.2.1/1.2.1.zip",
+          "sha256": "202562bf6ecb92685c12d297f8103e8dc621f09fcc0a448202489ae4ee3d69dd"
         }
       ]
     },
@@ -133,6 +175,21 @@
           "version": "1.1.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/mkv/1.1.1/1.1.1.zip",
           "sha256": "7b2f79e18172de1d6ecdc9f9631fa1d5f2de95676029f13a88346154c09f3c26"
+        }
+      ]
+    },
+    {
+      "id": "nodes",
+      "name": "Placement et contraintes de nœuds",
+      "summary": "Composants nodes natifs du moteur, distribués depuis le Store.",
+      "category": "cluster",
+      "requiredTools": [],
+      "latestVersion": "1.8.1",
+      "versions": [
+        {
+          "version": "1.8.1",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/nodes/1.8.1/1.8.1.zip",
+          "sha256": "38d890f5815fbabaf276b63f61305f63adbb702636fd2833a54cedf92d8492f8"
         }
       ]
     },
