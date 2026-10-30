@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "audio",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "name": "Audio",
   "supportedHostContractVersions": [
     1
@@ -225,7 +225,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": true,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "audio"
@@ -467,7 +468,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": true,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "audio"
@@ -548,7 +550,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": true,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": true,
       "category": "audio"
@@ -651,7 +654,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": true,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "audio"
@@ -749,7 +753,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": true,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "audio"
@@ -848,7 +853,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": true,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "media-rules"
@@ -925,7 +931,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": true,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "audio"
@@ -1193,7 +1200,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ],
       "minimumRuntimePluginVersion": "1.1.0",
       "producesFiles": false,
       "category": "audio"

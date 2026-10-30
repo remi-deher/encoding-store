@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "mkv",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "name": "Matroska & MKV",
   "supportedHostContractVersions": [
     1
@@ -126,7 +126,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ],
       "producesFiles": false,
       "category": "containers"
     },
@@ -232,7 +234,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ],
       "producesFiles": false,
       "category": "containers"
     },
@@ -283,7 +287,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ],
       "producesFiles": true,
       "category": "containers"
     },
@@ -351,7 +357,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ],
       "producesFiles": false,
       "category": "containers"
     },
@@ -457,7 +465,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ],
       "producesFiles": false,
       "category": "containers"
     },
@@ -524,7 +534,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ],
       "producesFiles": false,
       "category": "containers"
     },
@@ -574,7 +586,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ],
       "producesFiles": true,
       "category": "containers"
     },
@@ -643,7 +657,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ],
       "producesFiles": false,
       "category": "containers"
     },
@@ -702,7 +718,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ],
       "producesFiles": true,
       "category": "containers"
     },
@@ -771,7 +789,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ],
       "producesFiles": false,
       "category": "containers"
     },
@@ -881,7 +901,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ],
       "minimumRuntimePluginVersion": "1.1.0",
       "producesFiles": false,
       "category": "containers"

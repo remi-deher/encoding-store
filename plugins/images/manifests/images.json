@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "images",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "name": "Traitement d'images",
   "supportedHostContractVersions": [
     1
@@ -82,7 +82,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.0.1"
+      ],
       "category": "images"
     },
     {
@@ -152,7 +154,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.0.1"
+      ],
       "category": "images"
     },
     {
@@ -244,7 +248,9 @@
       ],
       "requiresMedia": true,
       "requiresWriteAccess": true,
-      "compatiblePluginVersions": [],
+      "compatiblePluginVersions": [
+        "1.0.1"
+      ],
       "category": "images"
     }
   ],

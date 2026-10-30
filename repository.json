@@ -59,7 +59,7 @@
       "summary": "Composants ai exécutés par le moteur Encoding.",
       "category": "ai",
       "requiredTools": [],
-      "latestVersion": "1.0.1",
+      "latestVersion": "1.0.2",
       "versions": [
         {
           "version": "1.0.0",
@@ -70,6 +70,11 @@
           "version": "1.0.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/ai/1.0.1/1.0.1.zip",
           "sha256": "9498ca9bcf83ef1970e6ef6a6394ca01a4c1a6f40501a00287ca7b6418a1a16d"
+        },
+        {
+          "version": "1.0.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/ai/1.0.2/1.0.2.zip",
+          "sha256": "09b837563a55e1974f5fab49d761d9adca6426601646c57babcf88d2e09d29ad"
         }
       ]
     },
@@ -79,7 +84,7 @@
       "summary": "Composants audio exécutés par le moteur Encoding.",
       "category": "audio",
       "requiredTools": [],
-      "latestVersion": "1.1.1",
+      "latestVersion": "1.1.2",
       "versions": [
         {
           "version": "1.1.0",
@@ -90,6 +95,11 @@
           "version": "1.1.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/audio/1.1.1/1.1.1.zip",
           "sha256": "1341afa6a89a4a5a212fd5d7b8b4c98d95c806c7aaec5ba27fd4e17fd3025362"
+        },
+        {
+          "version": "1.1.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/audio/1.1.2/1.1.2.zip",
+          "sha256": "b1d8247315ead3db78da063f9c07e2ff596cff7a2c024c494127ff94d14d7059"
         }
       ]
     },
@@ -129,7 +139,7 @@
       "summary": "Composants images exécutés par le moteur Encoding.",
       "category": "images",
       "requiredTools": [],
-      "latestVersion": "1.0.1",
+      "latestVersion": "1.0.2",
       "versions": [
         {
           "version": "1.0.0",
@@ -140,6 +150,11 @@
           "version": "1.0.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/images/1.0.1/1.0.1.zip",
           "sha256": "90f5472c939e404c5c9830b0c4117f80d385fb606613b2a37b61ea178ab4b267"
+        },
+        {
+          "version": "1.0.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/images/1.0.2/1.0.2.zip",
+          "sha256": "4018daa9a2507f81d107afa57c10b83b46368b1ca438be3e5e8ad4aafb3cc8c3"
         }
       ]
     },
@@ -164,7 +179,7 @@
       "summary": "Composants mkv exécutés par le moteur Encoding.",
       "category": "containers",
       "requiredTools": [],
-      "latestVersion": "1.1.1",
+      "latestVersion": "1.1.2",
       "versions": [
         {
           "version": "1.1.0",
@@ -175,6 +190,11 @@
           "version": "1.1.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/mkv/1.1.1/1.1.1.zip",
           "sha256": "7b2f79e18172de1d6ecdc9f9631fa1d5f2de95676029f13a88346154c09f3c26"
+        },
+        {
+          "version": "1.1.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/mkv/1.1.2/1.1.2.zip",
+          "sha256": "95cb1ff9805f7d9db724c82c855d41fdf90ee722bff8386f87ea8ea250ea47c3"
         }
       ]
     },
@@ -214,7 +234,7 @@
       "summary": "Composants probe exécutés par le moteur Encoding.",
       "category": "probe",
       "requiredTools": [],
-      "latestVersion": "1.1.1",
+      "latestVersion": "1.1.2",
       "versions": [
         {
           "version": "1.1.0",
@@ -225,6 +245,11 @@
           "version": "1.1.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/probe/1.1.1/1.1.1.zip",
           "sha256": "5d2217171c188a3ff63e0a29e9b914a6af3d2c970a9fb8231c7dc23a866dcdfc"
+        },
+        {
+          "version": "1.1.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/probe/1.1.2/1.1.2.zip",
+          "sha256": "4ca8dae63f43d3c903a1c58c0a21f59d24c6ae223f409eded79415cc8c3ced07"
         }
       ]
     },
@@ -264,7 +289,7 @@
       "summary": "Composants subtitles exécutés par le moteur Encoding.",
       "category": "subtitles",
       "requiredTools": [],
-      "latestVersion": "1.3.1",
+      "latestVersion": "1.3.2",
       "versions": [
         {
           "version": "1.3.0",
@@ -275,6 +300,11 @@
           "version": "1.3.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/subtitles/1.3.1/1.3.1.zip",
           "sha256": "c3c78599a3b6eab3131d501a0855b34dd31dcaba1ab4c1426eb7af8303131cf6"
+        },
+        {
+          "version": "1.3.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/subtitles/1.3.2/1.3.2.zip",
+          "sha256": "485170852e0e4bfc709846a14b101854b02c5a2624e7510aae6575f22c3b1cc6"
         }
       ]
     },
@@ -284,7 +314,7 @@
       "summary": "Composants video exécutés par le moteur Encoding.",
       "category": "video",
       "requiredTools": [],
-      "latestVersion": "1.3.1",
+      "latestVersion": "1.3.2",
       "versions": [
         {
           "version": "1.3.0",
@@ -295,6 +325,11 @@
           "version": "1.3.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/video/1.3.1/1.3.1.zip",
           "sha256": "7c60ab312de57fe87d259c3965fd65cd6eaf9419fcb9a36d8f40346c45b160db"
+        },
+        {
+          "version": "1.3.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/video/1.3.2/1.3.2.zip",
+          "sha256": "c554496b9c5f8f378aebcf4a6b70e94e880448c93709917115240a1d5a6bf597"
         }
       ]
     }

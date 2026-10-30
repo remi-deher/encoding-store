@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "probe",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "name": "Sondes & Analyse média",
   "supportedHostContractVersions": [
     1
@@ -66,7 +66,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": false,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "metadata"
@@ -130,7 +131,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": false,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "metadata"
@@ -202,7 +204,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": false,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "metadata"
@@ -275,7 +278,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": false,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "metadata"
@@ -338,7 +342,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": false,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "metadata"
@@ -410,7 +415,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": false,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "metadata"
@@ -483,7 +489,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": false,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "metadata"
@@ -526,7 +533,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": false,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": true,
       "category": "reporting"
@@ -756,7 +764,8 @@
       "requiresMedia": true,
       "requiresWriteAccess": false,
       "compatiblePluginVersions": [
-        "1.0.0"
+        "1.0.0",
+        "1.1.1"
       ],
       "producesFiles": false,
       "category": "validation"
@@ -852,7 +861,10 @@
       "requiresMedia": true,
       "requiresWriteAccess": false,
       "minimumRuntimePluginVersion": "1.1.0",
-      "category": "validation"
+      "category": "validation",
+      "compatiblePluginVersions": [
+        "1.1.1"
+      ]
     }
   ],
   "requiredToolPackages": [
