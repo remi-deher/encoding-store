@@ -1,0 +1,166 @@
+{
+  "contractVersion": 1,
+  "id": "sonarr",
+  "version": "1.0.0",
+  "name": "Sonarr",
+  "supportedHostContractVersions": [
+    1
+  ],
+  "configurationSchema": {
+    "version": 1,
+    "fields": [
+      {
+        "id": "baseUrl",
+        "type": "text",
+        "label": "Adresse du serveur",
+        "required": true,
+        "placeholder": "http://sonarr:8989"
+      },
+      {
+        "id": "apiKey",
+        "type": "secret",
+        "label": "Clé API Sonarr",
+        "required": true
+      },
+      {
+        "id": "pathMappings",
+        "type": "text",
+        "label": "Correspondance des chemins",
+        "description": "Une ligne par bibliothèque Encoding : identifiant-bibliothèque=/chemin/vu/par/Sonarr. Active le déclencheur d’import (POST /api/v1/integrations/sonarr/webhook) et permet aux composants de retrouver le fichier traité.",
+        "multiline": true,
+        "placeholder": "00000000-0000-0000-0000-000000000000=/tv"
+      },
+      {
+        "id": "webhookSecret",
+        "type": "secret",
+        "scope": "server",
+        "label": "Secret du webhook",
+        "description": "Mot de passe (authentification de base, utilisateur quelconque) ou en-tête X-Encoding-Webhook-Secret à configurer dans la connexion Webhook de Sonarr."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "sonarr-refresh-series",
+      "version": "1.0.0",
+      "name": "Actualiser une série Sonarr",
+      "description": "Demande à Sonarr de relire les fichiers du série qui contient le fichier traité.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Sonarr a accepté la demande."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Le série est introuvable ou la configuration est incomplète."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": []
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "category": "arr"
+    },
+    {
+      "id": "sonarr-check-episode-indexed",
+      "version": "1.0.0",
+      "name": "Vérifier l’épisode dans Sonarr",
+      "description": "Vérifie si l’épisode ciblé est reconnu par Sonarr.",
+      "kind": "condition",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "found",
+          "label": "Trouvé",
+          "description": "L’élément est présent dans la bibliothèque."
+        },
+        {
+          "id": "notFound",
+          "label": "Absent",
+          "description": "L’élément n’est pas présent dans la bibliothèque."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "La vérification n’a pas pu aboutir."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "episodeId",
+            "type": "number",
+            "label": "ID de l’épisode Sonarr",
+            "required": false,
+            "min": 1,
+            "step": 1,
+            "description": "Laisser vide pour vérifier le fichier traité.",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "category": "arr"
+    },
+    {
+      "id": "sonarr-search-missing-episodes",
+      "version": "1.0.0",
+      "name": "Rechercher les épisodes manquants",
+      "description": "Demande à Sonarr de rechercher les épisodes manquants d’une série surveillée.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Le composant a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Le composant n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "seriesId",
+            "type": "number",
+            "label": "ID de la série Sonarr",
+            "required": false,
+            "min": 1,
+            "step": 1,
+            "description": "Laisser vide pour utiliser le série qui contient le fichier traité.",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "category": "arr"
+    }
+  ]
+}

@@ -1,0 +1,890 @@
+{
+  "contractVersion": 1,
+  "id": "mkv",
+  "version": "1.1.0",
+  "name": "Matroska & MKV",
+  "supportedHostContractVersions": [
+    1
+  ],
+  "components": [
+    {
+      "id": "mkv-remux-matroska",
+      "version": "1.0.0",
+      "name": "Créer ou remuxer un MKV",
+      "description": "Regroupe les pistes choisies dans un conteneur Matroska sans les réencoder.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "processingMode",
+            "label": "Mode de traitement",
+            "type": "select",
+            "defaultValue": "plan",
+            "description": "Ajouter les réglages au plan, puis utiliser Exécuter le traitement ; ou réaliser une opération autonome.",
+            "options": [
+              {
+                "value": "plan",
+                "label": "Ajouter au plan"
+              },
+              {
+                "value": "direct",
+                "label": "Opération autonome"
+              }
+            ],
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "trackType",
+            "label": "Type de piste",
+            "type": "select",
+            "inline": true,
+            "defaultValue": "all",
+            "options": [
+              {
+                "value": "all",
+                "label": "Tous"
+              },
+              {
+                "value": "video",
+                "label": "Vidéo"
+              },
+              {
+                "value": "audio",
+                "label": "Audio"
+              },
+              {
+                "value": "subtitles",
+                "label": "Sous-titres"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "trackIds",
+            "label": "Identifiants des pistes",
+            "type": "text",
+            "required": false,
+            "description": "Identifiants séparés par des virgules ; vide pour toutes les pistes du type choisi.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "indices"
+          },
+          {
+            "id": "language",
+            "label": "Filtrer par langue",
+            "type": "text",
+            "required": false,
+            "description": "Facultatif, par exemple fra ou eng.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "language"
+          },
+          {
+            "id": "title",
+            "label": "Titre du conteneur",
+            "type": "text",
+            "required": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "keepAttachments",
+            "label": "Conserver les pièces jointes",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "producesFiles": false,
+      "category": "containers"
+    },
+    {
+      "id": "mkv-remove-tracks",
+      "version": "1.0.0",
+      "name": "Retirer des pistes",
+      "description": "Produit un MKV sans les pistes sélectionnées.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "processingMode",
+            "label": "Mode de traitement",
+            "type": "select",
+            "defaultValue": "plan",
+            "description": "Ajouter les réglages au plan, puis utiliser Exécuter le traitement ; ou réaliser une opération autonome.",
+            "options": [
+              {
+                "value": "plan",
+                "label": "Ajouter au plan"
+              },
+              {
+                "value": "direct",
+                "label": "Opération autonome"
+              }
+            ],
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "trackType",
+            "label": "Type de piste",
+            "type": "select",
+            "inline": true,
+            "defaultValue": "all",
+            "options": [
+              {
+                "value": "all",
+                "label": "Tous"
+              },
+              {
+                "value": "video",
+                "label": "Vidéo"
+              },
+              {
+                "value": "audio",
+                "label": "Audio"
+              },
+              {
+                "value": "subtitles",
+                "label": "Sous-titres"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "trackIds",
+            "label": "Identifiants des pistes",
+            "type": "text",
+            "required": false,
+            "description": "Identifiants séparés par des virgules ; vide pour toutes les pistes du type choisi.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "indices"
+          },
+          {
+            "id": "language",
+            "label": "Filtrer par langue",
+            "type": "text",
+            "required": false,
+            "description": "Facultatif, par exemple fra ou eng.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "language"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "producesFiles": false,
+      "category": "containers"
+    },
+    {
+      "id": "mkv-extract-track",
+      "version": "1.0.0",
+      "name": "Extraire une piste",
+      "description": "Extrait une piste Matroska dans son format natif, sans conversion de codec.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "trackId",
+            "label": "Identifiant de piste",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 0,
+            "min": 0,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "producesFiles": true,
+      "category": "containers"
+    },
+    {
+      "id": "mkv-reorder-tracks",
+      "version": "1.0.0",
+      "name": "Réordonner les pistes",
+      "description": "Définit l’ordre des pistes dans le conteneur MKV.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "processingMode",
+            "label": "Mode de traitement",
+            "type": "select",
+            "defaultValue": "plan",
+            "description": "Ajouter les réglages au plan, puis utiliser Exécuter le traitement ; ou réaliser une opération autonome.",
+            "options": [
+              {
+                "value": "plan",
+                "label": "Ajouter au plan"
+              },
+              {
+                "value": "direct",
+                "label": "Opération autonome"
+              }
+            ],
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "trackOrder",
+            "label": "Ordre des identifiants",
+            "type": "text",
+            "required": true,
+            "description": "Identifiants séparés par des virgules, par exemple 0,2,1,3.",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "producesFiles": false,
+      "category": "containers"
+    },
+    {
+      "id": "mkv-edit-track-properties",
+      "version": "1.0.0",
+      "name": "Modifier les propriétés d’une piste",
+      "description": "Règle la langue, le nom et les indicateurs d’une piste MKV.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "processingMode",
+            "label": "Mode de traitement",
+            "type": "select",
+            "defaultValue": "plan",
+            "description": "Ajouter les réglages au plan, puis utiliser Exécuter le traitement ; ou réaliser une opération autonome.",
+            "options": [
+              {
+                "value": "plan",
+                "label": "Ajouter au plan"
+              },
+              {
+                "value": "direct",
+                "label": "Opération autonome"
+              }
+            ],
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "trackId",
+            "label": "Identifiant de piste",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 0,
+            "min": 0,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "language",
+            "label": "Langue",
+            "type": "text",
+            "required": true,
+            "description": "Code de langue, par exemple fra ou eng.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "language"
+          },
+          {
+            "id": "trackName",
+            "label": "Nom de la piste",
+            "type": "text",
+            "required": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "defaultTrack",
+            "label": "Piste par défaut",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "forcedTrack",
+            "label": "Piste forcée",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "producesFiles": false,
+      "category": "containers"
+    },
+    {
+      "id": "mkv-edit-matroska-metadata",
+      "version": "1.0.0",
+      "name": "Modifier le titre du conteneur",
+      "description": "Change le titre d’une copie de travail du fichier MKV.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "processingMode",
+            "label": "Mode de traitement",
+            "type": "select",
+            "defaultValue": "plan",
+            "description": "Ajouter les réglages au plan, puis utiliser Exécuter le traitement ; ou réaliser une opération autonome.",
+            "options": [
+              {
+                "value": "plan",
+                "label": "Ajouter au plan"
+              },
+              {
+                "value": "direct",
+                "label": "Opération autonome"
+              }
+            ],
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "title",
+            "label": "Titre du conteneur",
+            "type": "text",
+            "required": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "producesFiles": false,
+      "category": "containers"
+    },
+    {
+      "id": "mkv-extract-attachments",
+      "version": "1.0.0",
+      "name": "Extraire les pièces jointes",
+      "description": "Extrait les polices, images et autres pièces jointes du MKV.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "attachmentIds",
+            "label": "Identifiants des pièces jointes",
+            "type": "text",
+            "required": false,
+            "description": "Séparés par des virgules ; vide pour toutes les pièces jointes.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "indices"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "producesFiles": true,
+      "category": "containers"
+    },
+    {
+      "id": "mkv-remove-attachments",
+      "version": "1.0.0",
+      "name": "Retirer les pièces jointes",
+      "description": "Produit une copie de travail du MKV sans les pièces jointes sélectionnées.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "processingMode",
+            "label": "Mode de traitement",
+            "type": "select",
+            "defaultValue": "plan",
+            "description": "Ajouter les réglages au plan, puis utiliser Exécuter le traitement ; ou réaliser une opération autonome.",
+            "options": [
+              {
+                "value": "plan",
+                "label": "Ajouter au plan"
+              },
+              {
+                "value": "direct",
+                "label": "Opération autonome"
+              }
+            ],
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "attachmentIds",
+            "label": "Identifiants des pièces jointes",
+            "type": "text",
+            "required": false,
+            "description": "Séparés par des virgules ; vide pour toutes les pièces jointes.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "indices"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "producesFiles": false,
+      "category": "containers"
+    },
+    {
+      "id": "mkv-extract-chapters",
+      "version": "1.0.0",
+      "name": "Extraire les chapitres",
+      "description": "Exporte les chapitres du MKV dans un fichier séparé.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "format",
+            "label": "Format",
+            "type": "select",
+            "inline": true,
+            "defaultValue": "xml",
+            "options": [
+              {
+                "value": "xml",
+                "label": "XML Matroska"
+              },
+              {
+                "value": "simple",
+                "label": "Texte simple"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "producesFiles": true,
+      "category": "containers"
+    },
+    {
+      "id": "mkv-replace-chapters",
+      "version": "1.0.0",
+      "name": "Remplacer les chapitres",
+      "description": "Applique un fichier de chapitres à une copie de travail du MKV.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "processingMode",
+            "label": "Mode de traitement",
+            "type": "select",
+            "defaultValue": "plan",
+            "description": "Ajouter les réglages au plan, puis utiliser Exécuter le traitement ; ou réaliser une opération autonome.",
+            "options": [
+              {
+                "value": "plan",
+                "label": "Ajouter au plan"
+              },
+              {
+                "value": "direct",
+                "label": "Opération autonome"
+              }
+            ],
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "sourceFile",
+            "label": "Fichier à ajouter",
+            "type": "text",
+            "required": true,
+            "description": "Référence à un fichier local ou à un résultat produit par le flow.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "artifact"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "producesFiles": false,
+      "category": "containers"
+    },
+    {
+      "id": "mkv-edit-in-place",
+      "version": "1.0.0",
+      "name": "Modifier une piste sur place (source)",
+      "description": "Change la langue, le nom et les drapeaux d’une piste, et au besoin le titre du conteneur, directement dans le fichier MKV de la bibliothèque, sans créer de nouveau fichier. Une copie intégrale est faite avant l’écriture ; si les pistes, pièces jointes, chapitres ou la durée changent, ou si une propriété n’est pas appliquée, le fichier d’origine est restauré. Réservé au worker qui a un accès direct à la bibliothèque (placez « Exiger un accès direct » en mode strict avant ce bloc), à placer avant tout bloc qui modifie le média. Le fichier source est modifié : à n’utiliser que si c’est voulu.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Les propriétés ont été appliquées sur place et vérifiées."
+        },
+        {
+          "id": "unchanged",
+          "label": "Déjà conforme",
+          "description": "Les propriétés demandées sont déjà en place ; rien n’a été écrit."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "La modification a été refusée ou a échoué ; la source est inchangée ou restaurée."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "trackId",
+            "label": "Identifiant de piste",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 0,
+            "min": 0,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "language",
+            "label": "Langue",
+            "type": "text",
+            "required": false,
+            "description": "Code de langue, par exemple fra ou eng. Vide : langue inchangée.",
+            "editor": "language",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "trackName",
+            "label": "Nom de la piste",
+            "type": "text",
+            "required": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "defaultTrack",
+            "label": "Piste par défaut",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "forcedTrack",
+            "label": "Piste forcée",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "containerTitle",
+            "label": "Titre du conteneur",
+            "type": "text",
+            "required": false,
+            "description": "Vide : titre inchangé.",
+            "importance": "advanced",
+            "section": "Paramètres"
+          },
+          {
+            "id": "keepBackup",
+            "label": "Conserver la copie de sauvegarde",
+            "type": "boolean",
+            "defaultValue": false,
+            "description": "Par défaut, la copie intégrale est supprimée une fois la modification vérifiée. Si vous la conservez, elle reste dans .encoding-replaced/<exécution>/ et n’est jamais purgée automatiquement.",
+            "importance": "advanced",
+            "section": "Sécurité"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "minimumRuntimePluginVersion": "1.1.0",
+      "producesFiles": false,
+      "category": "containers"
+    }
+  ]
+}

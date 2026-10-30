@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/remi-deher/encoding-store/blob/main/schemas/plugin-package.schema.json",
+  "title": "Encoding Plugin Package Manifest",
+  "type": "object",
+  "required": ["contractVersion", "id", "version", "name", "supportedHostContractVersions", "components", "runtime"],
+  "properties": {
+    "contractVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]{0,127}$" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "name": { "type": "string", "minLength": 1 },
+    "supportedHostContractVersions": { "type": "array", "items": { "type": "integer" } },
+    "components": { "type": "array" },
+    "requiredToolPackages": { "type": "array" },
+    "runtime": {
+      "oneOf": [
+        { "type": "object", "required": ["type", "entrypoint"], "properties": { "type": { "enum": ["python3", "node"] }, "entrypoint": { "type": "string", "minLength": 1 } }, "additionalProperties": false },
+        { "type": "object", "required": ["type", "entrypoint"], "properties": { "type": { "const": "native" }, "entrypoint": { "const": "" } }, "additionalProperties": false }
+      ]
+    }
+  },
+  "additionalProperties": true
+}

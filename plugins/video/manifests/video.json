@@ -1,0 +1,965 @@
+{
+  "contractVersion": 1,
+  "id": "video",
+  "version": "1.3.0",
+  "name": "Vidéo",
+  "supportedHostContractVersions": [
+    1
+  ],
+  "components": [
+    {
+      "id": "video-transcode",
+      "version": "1.0.0",
+      "name": "Encoder la vidéo",
+      "description": "Encode la vidéo selon le codec et la qualité choisis.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "processingMode",
+            "label": "Mode de traitement",
+            "type": "select",
+            "defaultValue": "plan",
+            "description": "Ajouter les réglages au plan, puis utiliser Exécuter le traitement ; ou réaliser une opération autonome. Dans une préparation Début FFmpeg / Exécuter FFmpeg, ce bloc ajoute toujours ses réglages au plan, sans produire de fichier intermédiaire.",
+            "options": [
+              {
+                "value": "plan",
+                "label": "Ajouter au plan"
+              },
+              {
+                "value": "direct",
+                "label": "Opération autonome"
+              }
+            ],
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "encodingProfile",
+            "label": "Profil de qualité",
+            "type": "encoding-profile",
+            "description": "Les valeurs du profil sont intégrées au flow et restent stables après publication.",
+            "importance": "basic",
+            "section": "Profil et qualité"
+          },
+          {
+            "id": "encoderMode",
+            "label": "Sélection de l’encodeur",
+            "type": "select",
+            "defaultValue": "automatic",
+            "options": [
+              {
+                "value": "automatic",
+                "label": "Automatique selon le worker"
+              },
+              {
+                "value": "specific",
+                "label": "Encodeur précis"
+              }
+            ],
+            "importance": "basic",
+            "section": "Encodeur"
+          },
+          {
+            "id": "encoderId",
+            "label": "Encodeur précis",
+            "type": "video-encoder",
+            "visibleWhenFieldId": "encoderMode",
+            "visibleWhenValue": "specific",
+            "importance": "basic",
+            "section": "Encodeur"
+          },
+          {
+            "id": "videoCodec",
+            "label": "Codec vidéo",
+            "type": "select",
+            "inline": true,
+            "defaultValue": "hevc",
+            "options": [
+              {
+                "value": "hevc",
+                "label": "H.265 / HEVC"
+              },
+              {
+                "value": "av1",
+                "label": "AV1"
+              },
+              {
+                "value": "h264",
+                "label": "H.264"
+              }
+            ],
+            "importance": "basic",
+            "section": "Exécution"
+          },
+          {
+            "id": "quality",
+            "label": "Qualité héritée (sans profil)",
+            "type": "number",
+            "visibleWhenFieldId": "encodingProfile",
+            "visibleWhenEmpty": true,
+            "defaultValue": 23,
+            "min": 0,
+            "max": 51,
+            "step": 1,
+            "suggestions": [
+              18,
+              20,
+              23,
+              26,
+              28
+            ],
+            "importance": "advanced",
+            "section": "Profil et qualité"
+          },
+          {
+            "id": "preset",
+            "label": "Preset hérité (sans profil)",
+            "type": "select",
+            "visibleWhenFieldId": "encodingProfile",
+            "visibleWhenEmpty": true,
+            "defaultValue": "medium",
+            "options": [
+              {
+                "value": "slow",
+                "label": "Lent"
+              },
+              {
+                "value": "medium",
+                "label": "Moyen"
+              },
+              {
+                "value": "fast",
+                "label": "Rapide"
+              }
+            ],
+            "importance": "advanced",
+            "section": "Profil et qualité"
+          },
+          {
+            "id": "hardwareAcceleration",
+            "label": "Accélération héritée (sans profil)",
+            "type": "select",
+            "visibleWhenFieldId": "encodingProfile",
+            "visibleWhenEmpty": true,
+            "defaultValue": "cpu",
+            "options": [
+              {
+                "value": "cpu",
+                "label": "CPU"
+              },
+              {
+                "value": "nvenc",
+                "label": "NVIDIA NVENC"
+              },
+              {
+                "value": "qsv",
+                "label": "Intel Quick Sync"
+              },
+              {
+                "value": "vaapi",
+                "label": "VAAPI"
+              }
+            ],
+            "importance": "advanced",
+            "section": "Encodeur"
+          },
+          {
+            "id": "qualityTier",
+            "label": "Palier de qualité adaptatif",
+            "type": "select",
+            "defaultValue": "custom",
+            "description": "Un palier autre que « Personnalisé » remplace la qualité du profil. La valeur effective dépend de la résolution et de l’encodeur ; elle est conservée dans l’historique de traitement.",
+            "options": [
+              {
+                "value": "custom",
+                "label": "Personnalisé (selon profil ou valeur manuelle)"
+              },
+              {
+                "value": "transparent",
+                "label": "Visuellement transparent"
+              },
+              {
+                "value": "high",
+                "label": "Haute qualité"
+              },
+              {
+                "value": "balanced",
+                "label": "Équilibré"
+              },
+              {
+                "value": "compact",
+                "label": "Compacité maximale"
+              }
+            ],
+            "importance": "basic",
+            "section": "Profil et qualité"
+          },
+          {
+            "id": "colorDepth",
+            "label": "Profondeur de couleur",
+            "type": "select",
+            "defaultValue": "auto",
+            "description": "Automatique et « Identique à la source » alignent la sortie sur l'entrée : 8 bits en 8 bits, 10 bits en 10 bits. « 10 bits » force le Main 10 pour éliminer le banding.",
+            "options": [
+              {
+                "value": "auto",
+                "label": "Automatique (identique à la source)"
+              },
+              {
+                "value": "10-bit",
+                "label": "10 bits (Main 10)"
+              },
+              {
+                "value": "source",
+                "label": "Identique à la source"
+              },
+              {
+                "value": "8-bit",
+                "label": "8 bits (Standard)"
+              }
+            ],
+            "importance": "basic",
+            "section": "Couleur et HDR"
+          },
+          {
+            "id": "preserveHdr",
+            "label": "Préserver les métadonnées HDR",
+            "type": "boolean",
+            "defaultValue": true,
+            "description": "Injecte automatiquement les espaces colorimétriques BT.2020 et courbes SMPTE ST 2084 pour éviter l'image délavée.",
+            "importance": "basic",
+            "section": "Couleur et HDR"
+          },
+          {
+            "id": "retryWithCpu",
+            "label": "Repli sur CPU si l’encodage matériel échoue",
+            "type": "boolean",
+            "defaultValue": false,
+            "description": "Si un encodeur matériel est sélectionné et que FFmpeg échoue, relance une fois avec le même codec sur CPU. Utilise d’abord la cible CPU du profil, puis les encodeurs CPU compatibles disponibles. Désactivez l’option pour conserver la sortie Erreur.",
+            "importance": "advanced",
+            "section": "Exécution"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffmpeg",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0"
+      ],
+      "producesFiles": false,
+      "category": "encoding"
+    },
+    {
+      "id": "video-resize",
+      "version": "1.0.0",
+      "name": "Redimensionner la vidéo",
+      "description": "Réencode la vidéo aux dimensions souhaitées en conservant ses proportions.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        },
+        {
+          "id": "unchanged",
+          "label": "Aucune modification",
+          "description": "Aucune piste correspondante ou dimensions déjà conformes : le média est conservé."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "resolution",
+            "label": "Résolution maximale",
+            "type": "select",
+            "importance": "basic",
+            "section": "Paramètres",
+            "options": [
+              {
+                "value": "custom",
+                "label": "Dimensions personnalisées"
+              },
+              {
+                "value": "720p",
+                "label": "720p"
+              },
+              {
+                "value": "1080p",
+                "label": "1080p"
+              },
+              {
+                "value": "1440p",
+                "label": "1440p"
+              },
+              {
+                "value": "2160p",
+                "label": "4K UHD"
+              }
+            ],
+            "defaultValue": "custom",
+            "requiresPluginVersion": "1.2.0"
+          },
+          {
+            "id": "processingMode",
+            "label": "Mode de traitement",
+            "type": "select",
+            "defaultValue": "plan",
+            "description": "Ajouter les réglages au plan, puis utiliser Exécuter le traitement ; ou réaliser une opération autonome. Dans une préparation Début FFmpeg / Exécuter FFmpeg, ce bloc ajoute toujours ses réglages au plan, sans produire de fichier intermédiaire.",
+            "options": [
+              {
+                "value": "plan",
+                "label": "Ajouter au plan"
+              },
+              {
+                "value": "direct",
+                "label": "Opération autonome"
+              }
+            ],
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "width",
+            "label": "Largeur maximale (pixels)",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 1920,
+            "min": 1,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres",
+            "visibleWhenFieldId": "resolution",
+            "visibleWhenValue": "custom"
+          },
+          {
+            "id": "height",
+            "label": "Hauteur maximale (pixels)",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 1080,
+            "min": 1,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres",
+            "visibleWhenFieldId": "resolution",
+            "visibleWhenValue": "custom"
+          },
+          {
+            "id": "onlyIfLarger",
+            "label": "Réduire uniquement, sans agrandir",
+            "type": "boolean",
+            "importance": "basic",
+            "section": "Paramètres",
+            "defaultValue": false,
+            "description": "Ignore le redimensionnement si le média est déjà contenu dans les dimensions maximales.",
+            "requiresPluginVersion": "1.2.0"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffmpeg",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0"
+      ],
+      "producesFiles": false,
+      "category": "video"
+    },
+    {
+      "id": "video-auto-crop",
+      "version": "1.0.0",
+      "name": "Rognage automatique des bandes noires",
+      "description": "Détecte les bandes noires (letterboxing/pillarboxing) par échantillonnage FFmpeg et intègre le filtre de rognage au plan d’encodage ou l’applique directement.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "cropped",
+          "label": "Rogné",
+          "description": "Bandes noires détectées et rognage configuré."
+        },
+        {
+          "id": "no-crop",
+          "label": "Plein cadre",
+          "description": "Aucun rognage requis (image déjà pleine)."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "La sonde de détection a échoué."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "processingMode",
+            "label": "Mode d’exécution",
+            "type": "select",
+            "defaultValue": "plan",
+            "options": [
+              {
+                "value": "plan",
+                "label": "Ajouter au plan (combiné au transcodage)"
+              },
+              {
+                "value": "direct",
+                "label": "Exécuter immédiatement"
+              }
+            ],
+            "description": "Le mode plan combine le filtre de rognage à base-transcode-video sans réécriture intermédiaire. Dans une préparation Début FFmpeg / Exécuter FFmpeg, ce bloc ajoute toujours ses réglages au plan, sans produire de fichier intermédiaire.",
+            "required": true,
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "samplePoints",
+            "label": "Points d'échantillonnage",
+            "type": "number",
+            "defaultValue": 5,
+            "min": 1,
+            "max": 20,
+            "step": 1,
+            "description": "Nombre de segments temporels analysés sur la vidéo.",
+            "required": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "threshold",
+            "label": "Sensibilité cropdetect",
+            "type": "number",
+            "defaultValue": 24,
+            "min": 1,
+            "max": 100,
+            "step": 1,
+            "description": "Seuil de noirceur pour cropdetect (24 par défaut).",
+            "required": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "roundMultiple",
+            "label": "Arrondi de dimension",
+            "type": "number",
+            "defaultValue": 2,
+            "min": 2,
+            "max": 32,
+            "step": 2,
+            "description": "Multiple auquel arrondir la largeur et la hauteur (2 ou 16).",
+            "required": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffmpeg",
+          "minimumVersion": "6.0.0",
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0"
+      ],
+      "producesFiles": false,
+      "category": "video"
+    },
+    {
+      "id": "video-deinterlace",
+      "version": "1.0.0",
+      "name": "Désentrelacement automatique",
+      "description": "Analyse les trames avec le filtre idet de FFmpeg et applique un désentrelacement bwdif ou yadif si le contenu est entrelacé.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "deinterlaced",
+          "label": "Désentrelacé",
+          "description": "Vidéo entrelacée détectée et filtre de désentrelacement appliqué ou ajouté au plan."
+        },
+        {
+          "id": "progressive",
+          "label": "Progressif",
+          "description": "Vidéo déjà progressive (aucun filtre ajouté)."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Échec de détection d'entrelacement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "processingMode",
+            "label": "Mode d’exécution",
+            "type": "select",
+            "defaultValue": "plan",
+            "options": [
+              {
+                "value": "plan",
+                "label": "Ajouter au plan (combiné au transcodage)"
+              },
+              {
+                "value": "direct",
+                "label": "Exécuter immédiatement"
+              }
+            ],
+            "description": "Le mode plan applique le désentrelacement pendant l'encodage sans passe séparée. Dans une préparation Début FFmpeg / Exécuter FFmpeg, ce bloc ajoute toujours ses réglages au plan, sans produire de fichier intermédiaire.",
+            "required": true,
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "algorithm",
+            "label": "Algorithme",
+            "type": "select",
+            "defaultValue": "bwdif",
+            "options": [
+              {
+                "value": "bwdif",
+                "label": "bwdif (Bob Weaver Deinterlacing - recommandé)"
+              },
+              {
+                "value": "yadif",
+                "label": "yadif (Yet Another Deinterlacing Filter)"
+              }
+            ],
+            "description": "Filtre FFmpeg de désentrelacement.",
+            "required": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "detectionFrames",
+            "label": "Trames analysées",
+            "type": "number",
+            "defaultValue": 1000,
+            "min": 100,
+            "max": 10000,
+            "step": 100,
+            "description": "Nombre de trames analysées pour la détection idet.",
+            "required": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "interlaceThresholdPercent",
+            "label": "Seuil d'entrelacement (%)",
+            "type": "number",
+            "defaultValue": 10,
+            "min": 1,
+            "max": 100,
+            "step": 1,
+            "description": "Pourcentage minimum de trames entrelacées pour activer le filtre (10% par défaut).",
+            "required": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffmpeg",
+          "minimumVersion": "6.0.0",
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0"
+      ],
+      "producesFiles": false,
+      "category": "video"
+    },
+    {
+      "id": "video-thumbnail",
+      "version": "1.0.0",
+      "name": "Créer une miniature",
+      "description": "Extrait une image à la position choisie dans la vidéo.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "positionSeconds",
+            "label": "Position (secondes)",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 0,
+            "min": 0,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "width",
+            "label": "Largeur (pixels)",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 640,
+            "min": 1,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "height",
+            "label": "Hauteur (pixels)",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 360,
+            "min": 1,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffmpeg",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0"
+      ],
+      "producesFiles": true,
+      "category": "video"
+    },
+    {
+      "id": "video-verify-decoding",
+      "version": "1.0.0",
+      "name": "Vérifier le décodage",
+      "description": "Décode les pistes sélectionnées et signale les erreurs rencontrées.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "trackType",
+            "label": "Type de piste",
+            "type": "select",
+            "inline": true,
+            "defaultValue": "all",
+            "options": [
+              {
+                "value": "all",
+                "label": "Tous"
+              },
+              {
+                "value": "video",
+                "label": "Vidéo"
+              },
+              {
+                "value": "audio",
+                "label": "Audio"
+              },
+              {
+                "value": "subtitles",
+                "label": "Sous-titres"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "trackIds",
+            "label": "Identifiants des pistes",
+            "type": "text",
+            "required": false,
+            "description": "Identifiants séparés par des virgules ; vide pour toutes les pistes du type choisi.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "indices"
+          },
+          {
+            "id": "language",
+            "label": "Filtrer par langue",
+            "type": "text",
+            "required": false,
+            "description": "Facultatif, par exemple fra ou eng.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "language"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffmpeg",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0"
+      ],
+      "producesFiles": false,
+      "category": "validation"
+    },
+    {
+      "id": "video-file-size-guard",
+      "version": "1.0.0",
+      "name": "Garde de réduction de taille",
+      "description": "Compare la taille du fichier encodé à la taille de référence (source d'origine) et protège la bibliothèque contre les encodages grossissant inutilement le fichier.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music"
+      ],
+      "outputs": [
+        {
+          "id": "reduced",
+          "label": "Gain suffisant",
+          "description": "Le fichier a diminué d’au moins le pourcentage demandé."
+        },
+        {
+          "id": "larger",
+          "label": "Gain insuffisant",
+          "description": "Le fichier encodé est plus lourd ou n'atteint pas le seuil d'économie."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Impossible de lire la taille des fichiers."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "minReductionPercent",
+            "label": "Réduction minimale (%)",
+            "type": "number",
+            "defaultValue": 10,
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "description": "Pourcentage minimum de réduction requis (ex: 10 pour 10% d'économie).",
+            "required": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "actionOnFailure",
+            "label": "Action si gain insuffisant",
+            "type": "select",
+            "defaultValue": "branch",
+            "options": [
+              {
+                "value": "branch",
+                "label": "Emprunter la sortie alternative (Gain insuffisant)"
+              },
+              {
+                "value": "revert",
+                "label": "Restaurer le fichier original et emprunter la sortie"
+              }
+            ],
+            "description": "Permet de restaurer la source d'origine pour ne pas publier un fichier plus gros.",
+            "required": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0",
+        "1.1.0",
+        "1.2.0"
+      ],
+      "producesFiles": false,
+      "category": "validation"
+    },
+    {
+      "id": "video-remux-media",
+      "version": "1.0.0",
+      "name": "Changer de conteneur",
+      "description": "Copie les pistes compatibles dans un conteneur MKV ou MP4.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "processingMode",
+            "label": "Mode de traitement",
+            "type": "select",
+            "defaultValue": "plan",
+            "description": "Ajouter les réglages au plan, puis utiliser Exécuter le traitement ; ou réaliser une opération autonome. Dans une préparation Début FFmpeg / Exécuter FFmpeg, ce bloc ajoute toujours ses réglages au plan, sans produire de fichier intermédiaire.",
+            "options": [
+              {
+                "value": "plan",
+                "label": "Ajouter au plan"
+              },
+              {
+                "value": "direct",
+                "label": "Opération autonome"
+              }
+            ],
+            "importance": "advanced",
+            "section": "Exécution"
+          },
+          {
+            "id": "container",
+            "label": "Conteneur",
+            "type": "select",
+            "inline": true,
+            "defaultValue": "mkv",
+            "options": [
+              {
+                "value": "mkv",
+                "label": "Matroska (MKV)"
+              },
+              {
+                "value": "mp4",
+                "label": "MP4"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffmpeg",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [
+        "1.1.0",
+        "1.2.0"
+      ],
+      "producesFiles": false,
+      "category": "containers"
+    }
+  ]
+}

@@ -1,8 +1,211 @@
 {
   "schemaVersion": "1.0.0",
   "name": "Encoding Store",
-  "description": "Catalogue public de plugins Encoding et de paquets d'outils média partagés.",
-  "categories": [],
-  "plugins": [],
+  "description": "Catalogue public de plugins Encoding et de paquets d’outils média partagés.",
+  "categories": [
+    {
+      "id": "arr",
+      "name": "Gestionnaires *ARR"
+    },
+    {
+      "id": "media-servers",
+      "name": "Serveurs média"
+    },
+    {
+      "id": "video",
+      "name": "Vidéo"
+    },
+    {
+      "id": "audio",
+      "name": "Audio"
+    },
+    {
+      "id": "subtitles",
+      "name": "Sous-titres"
+    },
+    {
+      "id": "containers",
+      "name": "Conteneurs média"
+    },
+    {
+      "id": "images",
+      "name": "Images"
+    },
+    {
+      "id": "probe",
+      "name": "Analyse média"
+    },
+    {
+      "id": "ai",
+      "name": "IA"
+    }
+  ],
+  "plugins": [
+    {
+      "id": "ai",
+      "name": "Intelligence Artificielle",
+      "summary": "Composants ai exécutés par le moteur Encoding.",
+      "category": "ai",
+      "requiredTools": [],
+      "latestVersion": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/ai/1.0.0/1.0.0.zip",
+          "sha256": "48e19ad062850f020235702c927e8b94a78cccec325b3fdbfb0826c92ae883b3"
+        }
+      ]
+    },
+    {
+      "id": "audio",
+      "name": "Audio",
+      "summary": "Composants audio exécutés par le moteur Encoding.",
+      "category": "audio",
+      "requiredTools": [],
+      "latestVersion": "1.1.0",
+      "versions": [
+        {
+          "version": "1.1.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/audio/1.1.0/1.1.0.zip",
+          "sha256": "539dc8154050ba09891972e079235997970907908bd65d9c171a36ea7c095a50"
+        }
+      ]
+    },
+    {
+      "id": "images",
+      "name": "Traitement d'images",
+      "summary": "Composants images exécutés par le moteur Encoding.",
+      "category": "images",
+      "requiredTools": [],
+      "latestVersion": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/images/1.0.0/1.0.0.zip",
+          "sha256": "62c5c54ee22bbfc39a22bc51574780d250052ba7c42d20025355659de2fe06ec"
+        }
+      ]
+    },
+    {
+      "id": "jellyfin",
+      "name": "Jellyfin",
+      "summary": "Plugin Jellyfin",
+      "category": "media-servers",
+      "requiredTools": [],
+      "latestVersion": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/jellyfin/1.0.0/1.0.0.zip",
+          "sha256": "c1c0a03e7a516605e1b8eae656e2dce2ed3bf4dc87bb700c5a03e3e07079133c"
+        }
+      ]
+    },
+    {
+      "id": "mkv",
+      "name": "Matroska & MKV",
+      "summary": "Composants mkv exécutés par le moteur Encoding.",
+      "category": "containers",
+      "requiredTools": [],
+      "latestVersion": "1.1.0",
+      "versions": [
+        {
+          "version": "1.1.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/mkv/1.1.0/1.1.0.zip",
+          "sha256": "c2f356e69f5e3630042e320dd9cb5e50ac7abc880a02a11d51a4ab311bb0ee0a"
+        }
+      ]
+    },
+    {
+      "id": "plex",
+      "name": "Plex",
+      "summary": "Plugin Plex",
+      "category": "media-servers",
+      "requiredTools": [],
+      "latestVersion": "1.1.0",
+      "versions": [
+        {
+          "version": "1.1.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/plex/1.1.0/1.1.0.zip",
+          "sha256": "f985fa72aaa213afdd9d20436cf7fa9ff91847e1bb3fe728dc3e8d6173dcc81a"
+        }
+      ]
+    },
+    {
+      "id": "probe",
+      "name": "Sondes & Analyse média",
+      "summary": "Composants probe exécutés par le moteur Encoding.",
+      "category": "probe",
+      "requiredTools": [],
+      "latestVersion": "1.1.0",
+      "versions": [
+        {
+          "version": "1.1.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/probe/1.1.0/1.1.0.zip",
+          "sha256": "896bcb7aac67507b18ad200f547cb4e7308cf9cd1488eda6e39e3d1751739bc5"
+        }
+      ]
+    },
+    {
+      "id": "radarr",
+      "name": "Radarr",
+      "summary": "Plugin Radarr",
+      "category": "arr",
+      "requiredTools": [],
+      "latestVersion": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/radarr/1.0.0/1.0.0.zip",
+          "sha256": "400220d2bfb280a2a2712d35d92cde40987a4921ae98ee2c9a0c703cb488dfbd"
+        }
+      ]
+    },
+    {
+      "id": "sonarr",
+      "name": "Sonarr",
+      "summary": "Plugin Sonarr",
+      "category": "arr",
+      "requiredTools": [],
+      "latestVersion": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/sonarr/1.0.0/1.0.0.zip",
+          "sha256": "084c66f617a972bca3800f90a800b9e625006e006df27bc69f43c112198ed5ae"
+        }
+      ]
+    },
+    {
+      "id": "subtitles",
+      "name": "Sous-titres",
+      "summary": "Composants subtitles exécutés par le moteur Encoding.",
+      "category": "subtitles",
+      "requiredTools": [],
+      "latestVersion": "1.3.0",
+      "versions": [
+        {
+          "version": "1.3.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/subtitles/1.3.0/1.3.0.zip",
+          "sha256": "812c0bcd34169ee893fad7e5a3817a4d716ad6b932c5463a0a7807972b602602"
+        }
+      ]
+    },
+    {
+      "id": "video",
+      "name": "Vidéo",
+      "summary": "Composants video exécutés par le moteur Encoding.",
+      "category": "video",
+      "requiredTools": [],
+      "latestVersion": "1.3.0",
+      "versions": [
+        {
+          "version": "1.3.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/video/1.3.0/1.3.0.zip",
+          "sha256": "052e46d4bba4c3eb661549eb6fe2049482cf0298ad66908e64c5be7a1d2afa18"
+        }
+      ]
+    }
+  ],
   "tools": []
 }

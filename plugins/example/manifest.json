@@ -1,0 +1,97 @@
+{
+  "contractVersion": 1,
+  "id": "example",
+  "version": "1.0.0",
+  "name": "Exemple",
+  "supportedHostContractVersions": [
+    1
+  ],
+  "components": [
+    {
+      "id": "example-tag-file",
+      "version": "1.0.0",
+      "name": "Étiqueter le fichier",
+      "description": "Écrit une variable de flow, réutilisable par les composants suivants.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "La variable est enregistrée."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "name",
+            "type": "text",
+            "label": "Nom de la variable",
+            "required": true,
+            "inline": true,
+            "defaultValue": "tag"
+          },
+          {
+            "id": "value",
+            "type": "text",
+            "label": "Valeur",
+            "description": "Laisser vide pour utiliser le nom du fichier traité."
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "category": "variables"
+    },
+    {
+      "id": "example-name-matches",
+      "version": "1.0.0",
+      "name": "Le chemin contient",
+      "description": "Aiguille selon que le chemin relatif du média contient un texte.",
+      "kind": "condition",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "yes",
+          "label": "Oui",
+          "description": "Le chemin contient le texte."
+        },
+        {
+          "id": "no",
+          "label": "Non",
+          "description": "Le chemin ne contient pas le texte."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "text",
+            "type": "text",
+            "label": "Texte recherché",
+            "required": true,
+            "inline": true
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "category": "conditions"
+    }
+  ]
+}

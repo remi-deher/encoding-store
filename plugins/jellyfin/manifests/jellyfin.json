@@ -1,0 +1,210 @@
+{
+  "contractVersion": 1,
+  "id": "jellyfin",
+  "version": "1.0.0",
+  "name": "Jellyfin",
+  "supportedHostContractVersions": [
+    1
+  ],
+  "configurationSchema": {
+    "version": 1,
+    "fields": [
+      {
+        "id": "baseUrl",
+        "type": "text",
+        "label": "Adresse du serveur",
+        "required": true,
+        "placeholder": "http://jellyfin:8096"
+      },
+      {
+        "id": "apiKey",
+        "type": "secret",
+        "label": "Clé API Jellyfin",
+        "required": true
+      },
+      {
+        "id": "pathMappings",
+        "type": "text",
+        "label": "Correspondance des chemins",
+        "description": "Une ligne par bibliothèque Encoding : identifiant-bibliothèque=/chemin/vu/par/Jellyfin. Permet aux composants de retrouver le fichier traité ; sans elle, ils agissent sur l’ensemble du service.",
+        "multiline": true,
+        "placeholder": "00000000-0000-0000-0000-000000000000=/media"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "jellyfin-refresh-item",
+      "version": "1.0.0",
+      "name": "Actualiser les métadonnées Jellyfin",
+      "description": "Demande à Jellyfin d’actualiser les métadonnées de l’élément ciblé ou du fichier traité.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Le composant a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Le composant n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "itemId",
+            "type": "text",
+            "label": "ID de l’élément Jellyfin",
+            "required": false,
+            "description": "Laisser vide pour viser le fichier traité.",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "category": "media-servers"
+    },
+    {
+      "id": "jellyfin-refresh-library",
+      "version": "1.0.0",
+      "name": "Actualiser la bibliothèque Jellyfin",
+      "description": "Informe Jellyfin que le fichier traité a changé (ou rescanne ses bibliothèques sans correspondance de chemins).",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Le composant a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Le composant n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": []
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "category": "media-servers"
+    },
+    {
+      "id": "jellyfin-check-item-indexed",
+      "version": "1.0.0",
+      "name": "Vérifier l’élément dans Jellyfin",
+      "description": "Vérifie si Jellyfin connaît l’élément ciblé ou le fichier traité.",
+      "kind": "condition",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "found",
+          "label": "Trouvé",
+          "description": "L’élément est présent dans la bibliothèque."
+        },
+        {
+          "id": "notFound",
+          "label": "Absent",
+          "description": "L’élément n’est pas présent dans la bibliothèque."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "La vérification n’a pas pu aboutir."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "itemId",
+            "type": "text",
+            "label": "ID de l’élément Jellyfin",
+            "required": false,
+            "description": "Laisser vide pour viser le fichier traité.",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "category": "media-servers"
+    },
+    {
+      "id": "jellyfin-check-playback",
+      "version": "1.0.0",
+      "name": "Lecture en cours dans Jellyfin",
+      "description": "Indique si le fichier traité (ou n’importe quel contenu) est en cours de lecture ; une lecture en pause compte comme en cours. Combiner avec « Différer le traitement » pour attendre la fin.",
+      "kind": "condition",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "playing",
+          "label": "Lecture en cours",
+          "description": "Le fichier (ou le service) est en cours de lecture."
+        },
+        {
+          "id": "idle",
+          "label": "Libre",
+          "description": "Aucune lecture concernée."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "La vérification n’a pas pu aboutir."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "scope",
+            "label": "Portée",
+            "type": "select",
+            "defaultValue": "file",
+            "options": [
+              {
+                "value": "file",
+                "label": "Fichier en cours de traitement"
+              },
+              {
+                "value": "global",
+                "label": "Toute lecture sur Jellyfin"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "category": "media-servers"
+    }
+  ]
+}

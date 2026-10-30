@@ -1,0 +1,277 @@
+{
+  "contractVersion": 1,
+  "id": "ai",
+  "version": "1.0.0",
+  "name": "Intelligence Artificielle",
+  "supportedHostContractVersions": [
+    1
+  ],
+  "components": [
+    {
+      "id": "ai-translate-subtitles",
+      "version": "1.0.0",
+      "name": "Traduction de sous-titres (IA)",
+      "description": "Traduit un fichier SRT ou une piste texte intégrée à une vidéo. La piste originale et ses minutages restent conservés.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "subtitles",
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "label": "Succès",
+          "description": "Les sous-titres ont été traduits avec succès."
+        },
+        {
+          "id": "rateLimit",
+          "label": "Quota dépassé",
+          "description": "Limite d'appels ou quota d'abonnement temporairement atteint."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Erreur lors de la traduction ou de l'analyse des sous-titres."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "targetLanguage",
+            "label": "Langue cible",
+            "type": "text",
+            "required": true,
+            "inline": true,
+            "defaultValue": "fr",
+            "description": "Code de langue ISO-639 ou nom complet de la langue cible.",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "sourceLanguage",
+            "label": "Langue source",
+            "type": "text",
+            "required": false,
+            "inline": true,
+            "defaultValue": "auto",
+            "description": "Langue source d'origine ou 'auto' pour détection automatique.",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "provider",
+            "label": "Fournisseur IA",
+            "type": "select",
+            "required": true,
+            "defaultValue": "codex-cli",
+            "options": [
+              {
+                "value": "codex-cli",
+                "label": "OpenAI Codex CLI (Compte ChatGPT)"
+              },
+              {
+                "value": "claude-cli",
+                "label": "Anthropic Claude CLI (Compte Claude)"
+              },
+              {
+                "value": "ollama",
+                "label": "Ollama local"
+              },
+              {
+                "value": "openai",
+                "label": "API OpenAI / Cloud"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "batchSize",
+            "label": "Taille des lots (répliques)",
+            "type": "number",
+            "defaultValue": 80,
+            "min": 20,
+            "max": 200,
+            "step": 10,
+            "description": "Nombre de répliques envoyées par requête à l'IA.",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "subtitleTrackIndex",
+            "label": "Indice de piste intégrée",
+            "type": "number",
+            "defaultValue": 0,
+            "min": 0,
+            "max": 64,
+            "step": 1,
+            "description": "Pour une vidéo, indice parmi ses pistes texte de sous-titres (0 = première piste). Les pistes image PGS/VobSub nécessitent un OCR distinct.",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffmpeg",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "category": "text"
+    },
+    {
+      "id": "ai-metadata-enricher",
+      "version": "1.0.0",
+      "name": "Enrichissement des métadonnées (IA)",
+      "description": "Produit un résumé et des mots-clés dans un fichier annexe, avec recherche externe facultative et provenance explicite.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video",
+        "music"
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "label": "Succès",
+          "description": "Le fichier de métadonnées annexes a été créé."
+        },
+        {
+          "id": "rateLimit",
+          "label": "Quota dépassé",
+          "description": "Le fournisseur IA a limité la requête."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’enrichissement a échoué; le média original est conservé."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "provider",
+            "label": "Fournisseur IA",
+            "type": "select",
+            "required": true,
+            "defaultValue": "ollama",
+            "options": [
+              {
+                "value": "ollama",
+                "label": "Ollama local"
+              },
+              {
+                "value": "openai",
+                "label": "OpenAI / Compatible API"
+              },
+              {
+                "value": "codex-cli",
+                "label": "OpenAI Codex CLI"
+              },
+              {
+                "value": "claude-cli",
+                "label": "Anthropic Claude CLI"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "useExternalSources",
+            "label": "Rechercher dans des catalogues externes",
+            "type": "boolean",
+            "defaultValue": false,
+            "description": "Envoie le titre du fichier à la source sélectionnée. Désactivé en mode local uniquement.",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "externalSource",
+            "label": "Source externe",
+            "type": "select",
+            "required": true,
+            "defaultValue": "tmdb",
+            "options": [
+              {
+                "value": "tmdb",
+                "label": "TMDb (films et séries)",
+                "supportedFlowMediaTypes": [
+                  "video"
+                ]
+              },
+              {
+                "value": "musicbrainz",
+                "label": "MusicBrainz (musique)",
+                "supportedFlowMediaTypes": [
+                  "music"
+                ]
+              },
+              {
+                "value": "none",
+                "label": "Aucune source externe"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "category": "metadata"
+    }
+  ],
+  "configurationSchema": {
+    "version": 1,
+    "fields": [
+      {
+        "id": "defaultProvider",
+        "type": "select",
+        "label": "Fournisseur IA par défaut",
+        "description": "Moteur utilisé pour l’inférence et la traduction.",
+        "defaultValue": "ollama",
+        "options": [
+          {
+            "value": "ollama",
+            "label": "Ollama local"
+          },
+          {
+            "value": "openai",
+            "label": "OpenAI / Compatible API"
+          },
+          {
+            "value": "codex-cli",
+            "label": "OpenAI Codex CLI"
+          },
+          {
+            "value": "claude-cli",
+            "label": "Anthropic Claude CLI"
+          }
+        ]
+      },
+      {
+        "id": "ollamaUrl",
+        "type": "text",
+        "label": "URL du serveur Ollama",
+        "description": "Point d’accès Ollama local ou distant.",
+        "defaultValue": "http://localhost:11434"
+      },
+      {
+        "id": "ollamaModel",
+        "type": "text",
+        "label": "Nom du modèle Ollama",
+        "description": "Modèle utilisé par défaut.",
+        "defaultValue": "llama3:latest"
+      }
+    ]
+  }
+}

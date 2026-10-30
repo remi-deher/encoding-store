@@ -1,0 +1,251 @@
+{
+  "contractVersion": 1,
+  "id": "images",
+  "version": "1.0.0",
+  "name": "Traitement d'images",
+  "supportedHostContractVersions": [
+    1
+  ],
+  "components": [
+    {
+      "id": "image-convert",
+      "version": "1.0.0",
+      "name": "Convertir une image",
+      "description": "Convertit l’image dans le format choisi.",
+      "kind": "action",
+      "mediaType": "image",
+      "supportedFlowMediaTypes": [
+        "image"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "format",
+            "label": "Format",
+            "type": "select",
+            "inline": true,
+            "defaultValue": "webp",
+            "options": [
+              {
+                "value": "webp",
+                "label": "WebP"
+              },
+              {
+                "value": "avif",
+                "label": "AVIF"
+              },
+              {
+                "value": "jpeg",
+                "label": "JPEG"
+              },
+              {
+                "value": "png",
+                "label": "PNG"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "quality",
+            "label": "Qualité",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 85,
+            "min": 1,
+            "max": 100,
+            "step": 1,
+            "importance": "advanced",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "imagemagick",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "category": "images"
+    },
+    {
+      "id": "image-resize",
+      "version": "1.0.0",
+      "name": "Redimensionner une image",
+      "description": "Redimensionne l’image avec ou sans conservation des proportions.",
+      "kind": "action",
+      "mediaType": "image",
+      "supportedFlowMediaTypes": [
+        "image"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "width",
+            "label": "Largeur maximale (pixels)",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 1920,
+            "min": 1,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "height",
+            "label": "Hauteur maximale (pixels)",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 1080,
+            "min": 1,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "preserveAspectRatio",
+            "label": "Conserver les proportions",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": true,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "imagemagick",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "category": "images"
+    },
+    {
+      "id": "image-crop",
+      "version": "1.0.0",
+      "name": "Recadrer une image",
+      "description": "Recadre une zone en pixels ou selon des proportions centrées.",
+      "kind": "action",
+      "mediaType": "image",
+      "supportedFlowMediaTypes": [
+        "image"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "aspectRatio",
+            "label": "Proportions cibles",
+            "type": "text",
+            "required": false,
+            "description": "Facultatif, par exemple 16:9. Si renseigné, applique un recadrage centré plutôt que la zone en pixels.",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "x",
+            "label": "Position horizontale (pixels)",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 0,
+            "min": 0,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "y",
+            "label": "Position verticale (pixels)",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 0,
+            "min": 0,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "width",
+            "label": "Largeur (pixels)",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 1920,
+            "min": 1,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "height",
+            "label": "Hauteur (pixels)",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 1080,
+            "min": 1,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "imagemagick",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [],
+      "category": "images"
+    }
+  ]
+}

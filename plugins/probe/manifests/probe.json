@@ -1,0 +1,858 @@
+{
+  "contractVersion": 1,
+  "id": "probe",
+  "version": "1.1.0",
+  "name": "Sondes & Analyse média",
+  "supportedHostContractVersions": [
+    1
+  ],
+  "components": [
+    {
+      "id": "probe-media",
+      "version": "1.0.0",
+      "name": "Analyser le média",
+      "description": "Lit les métadonnées du scan courant : conteneur, durée, taille et débit.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "resultVariable",
+            "label": "Variable de résultat",
+            "type": "text",
+            "required": true,
+            "description": "Nom de la variable accessible aux actions et conditions suivantes.",
+            "defaultValue": "mediaDetails",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "refreshMetadata",
+            "label": "Actualiser les métadonnées",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffprobe",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "producesFiles": false,
+      "category": "metadata"
+    },
+    {
+      "id": "probe-tracks",
+      "version": "1.0.0",
+      "name": "Lister les pistes",
+      "description": "Lit les identifiants, types, codecs et langues des pistes.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "resultVariable",
+            "label": "Variable de résultat",
+            "type": "text",
+            "required": true,
+            "description": "Nom de la variable accessible aux actions et conditions suivantes.",
+            "defaultValue": "mediaDetails",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "refreshMetadata",
+            "label": "Actualiser les métadonnées",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffprobe",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "producesFiles": false,
+      "category": "metadata"
+    },
+    {
+      "id": "probe-video",
+      "version": "1.0.0",
+      "name": "Lire les caractéristiques vidéo",
+      "description": "Lit la résolution, la fréquence d’images et le format de pixels.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "trackId",
+            "label": "Identifiant de piste",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 0,
+            "min": 0,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "resultVariable",
+            "label": "Variable de résultat",
+            "type": "text",
+            "required": true,
+            "description": "Nom de la variable accessible aux actions et conditions suivantes.",
+            "defaultValue": "mediaDetails",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "refreshMetadata",
+            "label": "Actualiser les métadonnées",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffprobe",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "producesFiles": false,
+      "category": "metadata"
+    },
+    {
+      "id": "probe-audio",
+      "version": "1.0.0",
+      "name": "Lire les caractéristiques audio",
+      "description": "Lit les canaux, la fréquence d’échantillonnage et le débit.",
+      "kind": "action",
+      "mediaType": "audio",
+      "supportedFlowMediaTypes": [
+        "video",
+        "music"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "trackId",
+            "label": "Identifiant de piste",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 0,
+            "min": 0,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "resultVariable",
+            "label": "Variable de résultat",
+            "type": "text",
+            "required": true,
+            "description": "Nom de la variable accessible aux actions et conditions suivantes.",
+            "defaultValue": "mediaDetails",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "refreshMetadata",
+            "label": "Actualiser les métadonnées",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffprobe",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "producesFiles": false,
+      "category": "metadata"
+    },
+    {
+      "id": "probe-inspect-media",
+      "version": "1.0.0",
+      "name": "Lire le rapport technique complet",
+      "description": "Lit les caractéristiques techniques disponibles avec MediaInfo.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "resultVariable",
+            "label": "Variable de résultat",
+            "type": "text",
+            "required": true,
+            "description": "Nom de la variable accessible aux actions et conditions suivantes.",
+            "defaultValue": "mediaDetails",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "refreshMetadata",
+            "label": "Actualiser les métadonnées",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mediainfo",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "producesFiles": false,
+      "category": "metadata"
+    },
+    {
+      "id": "probe-inspect-hdr",
+      "version": "1.0.0",
+      "name": "Lire les caractéristiques HDR",
+      "description": "Lit le format HDR, la profondeur de couleur et les informations disponibles.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "trackId",
+            "label": "Identifiant de piste",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 0,
+            "min": 0,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "resultVariable",
+            "label": "Variable de résultat",
+            "type": "text",
+            "required": true,
+            "description": "Nom de la variable accessible aux actions et conditions suivantes.",
+            "defaultValue": "mediaDetails",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "refreshMetadata",
+            "label": "Actualiser les métadonnées",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mediainfo",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "producesFiles": false,
+      "category": "metadata"
+    },
+    {
+      "id": "probe-inspect-track",
+      "version": "1.0.0",
+      "name": "Lire les caractéristiques d’une piste",
+      "description": "Lit les détails techniques de la piste sélectionnée.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "music"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "trackId",
+            "label": "Identifiant de piste",
+            "type": "number",
+            "inline": true,
+            "defaultValue": 0,
+            "min": 0,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "resultVariable",
+            "label": "Variable de résultat",
+            "type": "text",
+            "required": true,
+            "description": "Nom de la variable accessible aux actions et conditions suivantes.",
+            "defaultValue": "mediaDetails",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "refreshMetadata",
+            "label": "Actualiser les métadonnées",
+            "type": "boolean",
+            "inline": true,
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mediainfo",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "producesFiles": false,
+      "category": "metadata"
+    },
+    {
+      "id": "probe-export-report",
+      "version": "1.0.0",
+      "name": "Exporter le rapport JSON",
+      "description": "Produit un rapport MediaInfo JSON comme résultat du flow.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’action a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "L’action n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": []
+      },
+      "requiredTools": [
+        {
+          "toolId": "mediainfo",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "producesFiles": true,
+      "category": "reporting"
+    },
+    {
+      "id": "probe-validate-output",
+      "version": "1.0.0",
+      "name": "Contrôler la sortie assemblée",
+      "description": "Compare le fichier assemblé à la source selon les contrôles choisis : durée, codecs, pistes, canaux audio/LFE, sous-titres, chapitres, pièces jointes, polices, taille et événements ASS.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "valid",
+          "label": "Valide",
+          "description": "Tous les contrôles activés ont réussi."
+        },
+        {
+          "id": "invalid",
+          "label": "Invalide",
+          "description": "Au moins un contrôle a détecté une différence."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Un outil ou une métadonnée nécessaire au contrôle est indisponible."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "requiredVideoCodec",
+            "label": "Codec vidéo requis",
+            "type": "select",
+            "defaultValue": "any",
+            "options": [
+              {
+                "value": "any",
+                "label": "Tout codec"
+              },
+              {
+                "value": "hevc",
+                "label": "HEVC"
+              },
+              {
+                "value": "hevc-or-source",
+                "label": "HEVC ou codec source conservé"
+              },
+              {
+                "value": "h264",
+                "label": "H.264"
+              },
+              {
+                "value": "av1",
+                "label": "AV1"
+              }
+            ],
+            "importance": "basic",
+            "section": "Vidéo et intégrité"
+          },
+          {
+            "id": "durationToleranceSeconds",
+            "label": "Écart de durée maximal (secondes)",
+            "type": "number",
+            "defaultValue": 2,
+            "min": 0,
+            "max": 600,
+            "step": 0.5,
+            "importance": "basic",
+            "section": "Durée"
+          },
+          {
+            "id": "preserveTrackCounts",
+            "label": "Conserver le nombre de pistes vidéo et audio",
+            "type": "boolean",
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Vidéo et intégrité"
+          },
+          {
+            "id": "preserveSubtitleCount",
+            "label": "Conserver le nombre de pistes de sous-titres",
+            "type": "boolean",
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Sous-titres"
+          },
+          {
+            "id": "allowedAudioCodecs",
+            "label": "Codecs audio autorisés",
+            "type": "text",
+            "defaultValue": "",
+            "description": "Liste séparée par des virgules. Laisser vide pour accepter tous les codecs.",
+            "importance": "basic",
+            "section": "Audio"
+          },
+          {
+            "id": "forbiddenAudioCodecs",
+            "label": "Codecs audio interdits",
+            "type": "text",
+            "defaultValue": "eac3",
+            "description": "Liste séparée par des virgules. Laisser vide pour ne pas filtrer les codecs audio.",
+            "importance": "basic",
+            "section": "Audio"
+          },
+          {
+            "id": "allowedSubtitleCodecs",
+            "label": "Codecs de sous-titres autorisés",
+            "type": "text",
+            "defaultValue": "ass,ssa,hdmv_pgs_subtitle,dvd_subtitle,dvb_subtitle",
+            "description": "Liste séparée par des virgules. Laisser vide pour accepter tous les codecs.",
+            "importance": "basic",
+            "section": "Sous-titres"
+          },
+          {
+            "id": "maxAudioChannels",
+            "label": "Nombre maximal de canaux audio (0 = aucune limite)",
+            "type": "number",
+            "defaultValue": 0,
+            "min": 0,
+            "max": 64,
+            "step": 1,
+            "importance": "basic",
+            "section": "Audio"
+          },
+          {
+            "id": "preserveAudioChannels",
+            "label": "Conserver le nombre de canaux par piste audio",
+            "type": "boolean",
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Audio"
+          },
+          {
+            "id": "preserveAudioLayout",
+            "label": "Conserver la disposition audio et le LFE",
+            "type": "boolean",
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Audio"
+          },
+          {
+            "id": "preserveSubtitleMetadata",
+            "label": "Conserver les langues, titres et indicateurs des sous-titres",
+            "type": "boolean",
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Sous-titres"
+          },
+          {
+            "id": "preserveChapterCount",
+            "label": "Conserver le nombre de chapitres",
+            "type": "boolean",
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Pièces jointes et chapitres"
+          },
+          {
+            "id": "preserveOriginalAttachments",
+            "label": "Conserver les pièces jointes d'origine",
+            "type": "boolean",
+            "defaultValue": false,
+            "importance": "basic",
+            "section": "Pièces jointes et chapitres"
+          },
+          {
+            "id": "requiredAttachmentNames",
+            "label": "Pièces jointes requises",
+            "type": "text",
+            "defaultValue": "",
+            "description": "Noms de fichiers séparés par des virgules, par exemple Arial.ttf.",
+            "importance": "basic",
+            "section": "Pièces jointes et chapitres"
+          },
+          {
+            "id": "maxOutputSizeGrowthPercent",
+            "label": "Croissance maximale de taille (0 = aucune limite)",
+            "type": "number",
+            "defaultValue": 0,
+            "min": 0,
+            "max": 1000,
+            "step": 1,
+            "importance": "basic",
+            "section": "Vidéo et intégrité"
+          },
+          {
+            "id": "compareAssEvents",
+            "label": "Comparer les événements des sous-titres texte",
+            "type": "boolean",
+            "defaultValue": false,
+            "description": "Compare début, fin et texte des événements après conversion temporaire en ASS.",
+            "importance": "basic",
+            "section": "Sous-titres"
+          },
+          {
+            "id": "verifyDecoding",
+            "label": "Ancien réglage de décodage (inactif)",
+            "type": "boolean",
+            "defaultValue": false,
+            "importance": "advanced",
+            "section": "Compatibilité historique",
+            "description": "Conservé pour lire les anciennes définitions. Le décodage d’intégrité se règle avec le bloc « Rechercher les erreurs média »."
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffprobe",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        },
+        {
+          "toolId": "ffmpeg",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        },
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "producesFiles": false,
+      "category": "validation"
+    },
+    {
+      "id": "probe-check-integrity",
+      "version": "1.0.0",
+      "name": "Rechercher les erreurs média",
+      "description": "Rapide : structure, pistes, durée et passages représentatifs ; aucune garantie entre les passages. Approfondi : décodage intégral vidéo/audio. Le mode GPU exige un décodeur vérifié sur ce média, sans secours CPU silencieux.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "music"
+      ],
+      "outputs": [
+        {
+          "id": "valid",
+          "label": "Conforme",
+          "description": "Contrôle réussi pour cette empreinte."
+        },
+        {
+          "id": "invalid",
+          "label": "Erreurs détectées",
+          "description": "Le décodage a détecté des erreurs."
+        },
+        {
+          "id": "error",
+          "label": "Contrôle impossible",
+          "description": "Configuration, outil, accès ou accélération indisponible."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "mode",
+            "type": "select",
+            "label": "Profondeur du contrôle",
+            "defaultValue": "quick",
+            "options": [
+              {
+                "value": "quick",
+                "label": "Rapide — passages représentatifs"
+              },
+              {
+                "value": "deep",
+                "label": "Approfondi — intégral"
+              }
+            ]
+          },
+          {
+            "id": "acceleration",
+            "type": "select",
+            "label": "Décodage approfondi",
+            "defaultValue": "auto",
+            "options": [
+              {
+                "value": "auto",
+                "label": "Automatique — GPU vérifié puis CPU"
+              },
+              {
+                "value": "cpu",
+                "label": "CPU"
+              },
+              {
+                "value": "gpu",
+                "label": "GPU obligatoire — échec si indisponible"
+              }
+            ],
+            "visibleWhenFieldId": "mode",
+            "visibleWhenValue": "deep"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "ffprobe",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        },
+        {
+          "toolId": "ffmpeg",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        },
+        {
+          "toolId": "media-integrity-policy/v1",
+          "minimumVersion": "1.0.0",
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": false,
+      "minimumRuntimePluginVersion": "1.1.0",
+      "category": "validation"
+    }
+  ]
+}

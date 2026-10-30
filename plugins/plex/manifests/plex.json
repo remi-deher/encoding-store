@@ -1,0 +1,355 @@
+{
+  "contractVersion": 1,
+  "id": "plex",
+  "version": "1.1.0",
+  "name": "Plex",
+  "supportedHostContractVersions": [
+    1
+  ],
+  "configurationSchema": {
+    "version": 1,
+    "fields": [
+      {
+        "id": "baseUrl",
+        "type": "text",
+        "label": "Adresse du serveur",
+        "required": true,
+        "placeholder": "http://plex:32400"
+      },
+      {
+        "id": "apiKey",
+        "type": "secret",
+        "label": "Jeton Plex",
+        "required": true
+      },
+      {
+        "id": "pathMappings",
+        "type": "text",
+        "label": "Correspondance des chemins",
+        "description": "Une ligne par bibliothèque Encoding : identifiant-bibliothèque=/chemin/vu/par/Plex. Permet aux composants de retrouver le fichier traité ; sans elle, ils agissent sur l’ensemble du service.",
+        "multiline": true,
+        "placeholder": "00000000-0000-0000-0000-000000000000=/media"
+      },
+      {
+        "id": "guardReplacement",
+        "label": "Garde avant modification ou remplacement de la source",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Avant de remplacer un fichier source (politique de bibliothèque), Encoding interroge Plex toutes les 30 secondes : le remplacement attend la fin de la lecture du fichier. Plex injoignable, jeton refusé ou fichier sans correspondance de chemin : la source n’est pas remplacée (le résultat distinct est conservé). Les blocs « Modifier les pistes sur place » et « Publier le résultat » attendent aussi (avec un dernier contrôle juste avant d’écrire) ; si Plex est injoignable, ils continuent."
+      },
+      {
+        "id": "guardIncludeNextEpisode",
+        "label": "Garde : tenir compte de l’épisode suivant",
+        "type": "boolean",
+        "defaultValue": true,
+        "description": "Une lecture de l’épisode précédent de la même saison retarde aussi le remplacement du fichier."
+      },
+      {
+        "id": "guardNextEpisodeMarginMinutes",
+        "label": "Garde : marge épisode précédent (minutes)",
+        "type": "number",
+        "defaultValue": 15,
+        "min": 0,
+        "max": 240,
+        "description": "L’épisode précédent retarde le remplacement tant qu’il lui reste au plus cette durée de lecture. 0 : pendant toute sa lecture."
+      },
+      {
+        "id": "guardMaxWaitMinutes",
+        "label": "Garde : attente maximale (minutes)",
+        "type": "number",
+        "defaultValue": 10,
+        "min": 1,
+        "max": 720,
+        "description": "Au-delà, le remplacement est abandonné pour cette exécution : le résultat distinct est publié et la source reste intacte ; un bloc de modification sur place ou de publication sort en erreur."
+      }
+    ]
+  },
+  "publicationGuard": {
+    "componentId": "plex-check-playback",
+    "enabledField": "guardReplacement",
+    "maxWaitField": "guardMaxWaitMinutes",
+    "fixedConfiguration": {
+      "scope": "file"
+    },
+    "configurationFields": {
+      "includeNextEpisode": "guardIncludeNextEpisode",
+      "nextEpisodeMarginMinutes": "guardNextEpisodeMarginMinutes"
+    },
+    "waitOutputs": [
+      "playing"
+    ],
+    "allowOutputs": [
+      "idle"
+    ]
+  },
+  "components": [
+    {
+      "id": "plex-refresh-library",
+      "version": "1.0.0",
+      "name": "Actualiser la bibliothèque Plex",
+      "description": "Demande à Plex d’actualiser le dossier du fichier traité (ou les bibliothèques).",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Le composant a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Le composant n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "sectionId",
+            "type": "number",
+            "label": "ID de bibliothèque",
+            "required": false,
+            "description": "Laisser vide pour déduire la bibliothèque du fichier traité (ou actualiser toutes les bibliothèques sans correspondance de chemins).",
+            "min": 1,
+            "step": 1,
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "category": "media-servers"
+    },
+    {
+      "id": "plex-wait-library-scan",
+      "version": "1.0.0",
+      "name": "Attendre la fin du scan Plex",
+      "description": "Attend la fin du scan de la bibliothèque qui contient le fichier traité (ou de celle indiquée).",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "Le composant a terminé son traitement."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Le composant n’a pas pu terminer son traitement."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "sectionId",
+            "type": "number",
+            "label": "ID de bibliothèque",
+            "required": false,
+            "min": 1,
+            "step": 1,
+            "description": "Laisser vide pour déduire la bibliothèque du fichier traité (ou attendre toutes les bibliothèques sans correspondance de chemins).",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "category": "media-servers"
+    },
+    {
+      "id": "plex-check-media-indexed",
+      "version": "1.0.0",
+      "name": "Vérifier le média dans Plex",
+      "description": "Vérifie si Plex a indexé l’élément ou le fichier traité.",
+      "kind": "condition",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "found",
+          "label": "Trouvé",
+          "description": "L’élément est présent dans la bibliothèque."
+        },
+        {
+          "id": "notFound",
+          "label": "Absent",
+          "description": "L’élément n’est pas présent dans la bibliothèque."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "La vérification n’a pas pu aboutir."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "ratingKey",
+            "type": "text",
+            "label": "Identifiant Plex (ratingKey)",
+            "required": false,
+            "placeholder": "Ex. 12345",
+            "description": "Laisser vide pour vérifier le fichier traité.",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "category": "media-servers"
+    },
+    {
+      "id": "plex-check-playback",
+      "version": "1.0.0",
+      "name": "Lecture en cours dans Plex",
+      "description": "Indique si le fichier traité (ou n’importe quel contenu) est en cours de lecture ; une lecture en pause compte comme en cours. Combiner avec « Différer le traitement » pour attendre la fin. Avec « épisode suivant », la lecture de l’épisode précédent de la même saison compte aussi.",
+      "kind": "condition",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "playing",
+          "label": "Lecture en cours",
+          "description": "Le fichier (ou le service) est en cours de lecture."
+        },
+        {
+          "id": "idle",
+          "label": "Libre",
+          "description": "Aucune lecture concernée."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "La vérification n’a pas pu aboutir."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "scope",
+            "label": "Portée",
+            "type": "select",
+            "defaultValue": "file",
+            "options": [
+              {
+                "value": "file",
+                "label": "Fichier en cours de traitement"
+              },
+              {
+                "value": "global",
+                "label": "Toute lecture sur Plex"
+              }
+            ],
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "includeNextEpisode",
+            "label": "Tenir compte de l’épisode précédent",
+            "type": "boolean",
+            "defaultValue": false,
+            "description": "Compte comme lecture celle de l’épisode précédent de la même saison (la lecture enchaînera sur ce fichier). Sans effet avec la portée « toute lecture ».",
+            "importance": "basic",
+            "section": "Paramètres"
+          },
+          {
+            "id": "nextEpisodeMarginMinutes",
+            "label": "Marge épisode précédent (minutes)",
+            "type": "number",
+            "defaultValue": 0,
+            "min": 0,
+            "max": 240,
+            "description": "L’épisode précédent compte tant qu’il lui reste au plus cette durée. 0 : pendant toute sa lecture.",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "compatiblePluginVersions": [
+        "1.0.0"
+      ],
+      "category": "media-servers"
+    },
+    {
+      "id": "plex-analyze-media",
+      "version": "1.1.0",
+      "name": "Analyser dans Plex",
+      "description": "Demande à Plex d’analyser le fichier traité (pistes, durée, flux) sans attendre la fin de l’analyse. Le fichier est retrouvé par la correspondance de chemins du plugin, ou par la clé d’élément Plex si elle est donnée.",
+      "kind": "action",
+      "mediaType": "general",
+      "supportedFlowMediaTypes": [
+        "video",
+        "image",
+        "music",
+        "subtitles"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Demandée",
+          "description": "Plex a reçu la demande d’analyse."
+        },
+        {
+          "id": "notFound",
+          "label": "Introuvable",
+          "description": "Plex ne connaît pas cet élément."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "La demande n’a pas pu aboutir."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "ratingKey",
+            "label": "Clé d’élément Plex",
+            "type": "text",
+            "description": "Facultatif. Sans clé, le fichier traité est retrouvé par son chemin.",
+            "importance": "basic",
+            "section": "Paramètres"
+          }
+        ]
+      },
+      "requiredTools": [],
+      "requiresMedia": false,
+      "requiresWriteAccess": false,
+      "category": "media-servers"
+    }
+  ]
+}

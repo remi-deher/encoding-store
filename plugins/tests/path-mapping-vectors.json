@@ -1,0 +1,20 @@
+{
+  "libraries": {
+    "tv": "11111111-1111-1111-1111-111111111111",
+    "movies": "22222222-2222-2222-2222-222222222222"
+  },
+  "mappings": "# commentaire\n{tv}=/tv/\n{movies} = /mnt/movies\\4k",
+  "roots": { "tv": "/tv", "movies": "/mnt/movies/4k" },
+  "toRemote": [
+    { "library": "tv", "relative": "Show/S01/e1.mkv", "remote": "/tv/Show/S01/e1.mkv" },
+    { "library": "movies", "relative": "Film/film.mkv", "remote": "/mnt/movies/4k/Film/film.mkv" },
+    { "library": "movies", "relative": "Film\\film.mkv", "remote": "/mnt/movies/4k/Film/film.mkv" }
+  ],
+  "invalid": [
+    "pas-un-guid=/tv",
+    "{tv}=",
+    "{tv}",
+    "{tv}=/a\n{tv}=/b",
+    "{tv}=/a\n{movies}=/a"
+  ]
+}
