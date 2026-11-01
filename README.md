@@ -17,10 +17,11 @@ Process plugins run in a separate Landlock confined process. Native media compon
 
 Current process integrations are Plex, Sonarr, Radarr, and Jellyfin. Native component manifests for base flows, node placement, conditions, video 1.3.2, audio 1.1.2, subtitles 1.3.2, MKV 1.1.2, images 1.0.2, probing 1.1.2, and AI 1.0.2 are also published here. Linux x64 packages are published for FFmpeg/FFprobe, MKVToolNix, MediaInfo, and ImageMagick, built from Ubuntu 24.04 Noble amd64 packages. Their source package versions and Debian archive hashes are recorded in [`tools/ubuntu-noble-lock.json`](tools/ubuntu-noble-lock.json). The engine image retains the compatible runtime libraries, while the executable packages are installed from this Store. Other platforms are not published yet.
 
-Run the checks (the same as CI; requires `pip install fastjsonschema ruff`) with:
+Run the checks (the same as CI; requires `pip install fastjsonschema ruff mypy`) with:
 
 ```sh
 ruff check .
+mypy
 python3 scripts/store.py verify
 python3 -m unittest discover -s scripts/tests -v
 python3 -m unittest discover -s plugins/tests -v

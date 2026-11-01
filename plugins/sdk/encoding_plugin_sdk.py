@@ -26,6 +26,8 @@ Outils d'auteur (aucun cluster nécessaire) :
     python3 encoding_plugin_sdk.py validate manifest.json      # mêmes règles que le serveur
     python3 plugin.py --simulate mon-composant '{"cle":"valeur"}' [--plugin-config '{...}'] [--media 'Dossier/e1.mkv']
 """
+from __future__ import annotations
+
 import json
 import os
 import re
@@ -35,6 +37,11 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar
+
+Json = Any
+Handler = Callable[["Context"], "Outcome"]
+T = TypeVar("T")
 
 CONTRACT_VERSION = 1
 MAX_REQUEST_CHARACTERS = 1024 * 1024
@@ -52,19 +59,20 @@ class ContractError(Exception):
 class Outcome:
     """Résultat d'un composant : exactement une sortie déclarée ou un résultat terminal."""
 
-    def __init__(self, output_id=None, terminal=None, detail="", variables=None, candidate=None):
+    def __init__(self, output_id: Optional[str] = None, terminal: Optional[str] = None, detail: Optional[str] = "",
+                 variables: Optional[Dict[str, Json]] = None, candidate: Optional[str] = None) -> None:
         self.output_id = output_id
         self.terminal = terminal
-        self.detail = detail
+        self.detail = detail or ""
         self.variables = variables or {}
         self.candidate = candidate
 
     @staticmethod
-    def output(output_id, detail="", variables=None, candidate=None):
+    def output(output_id: str, detail: Optional[str] = "", variables: Optional[Dict[str, Json]] = None, candidate: Optional[str] = None) -> "Outcome":
         return Outcome(output_id=output_id, detail=detail, variables=variables, candidate=candidate)
 
     @staticmethod
-    def finish(terminal, detail=""):
+    def finish(terminal: str, detail: str = "") -> "Outcome":
         if terminal not in TERMINAL_RESULTS:
             raise ValueError("Résultat terminal inconnu : %s" % terminal)
         return Outcome(terminal=terminal, detail=detail)
@@ -73,7 +81,7 @@ class Outcome:
 class Context:
     """Invocation reçue par un composant, avec accès typé à sa configuration et à celle du plugin."""
 
-    def __init__(self, invocation):
+    def __init__(self, invocation: Dict[str, Json]) -> None:
         self.invocation = invocation
         self.config = invocation.get("configuration") or {}
         self.plugin_config = invocation.get("pluginConfiguration") or {}
@@ -86,35 +94,35 @@ class Context:
         self.current_metadata = context.get("currentMetadata")
 
     @staticmethod
-    def _text(values, key):
+    def _text(values: Dict[str, Json], key: str) -> Optional[str]:
         value = values.get(key)
         return value if isinstance(value, str) and value.strip() else None
 
     @staticmethod
-    def _number(values, key):
+    def _number(values: Dict[str, Json], key: str) -> Optional[float]:
         value = values.get(key)
         return value if isinstance(value, (int, float)) and not isinstance(value, bool) else None
 
-    def text(self, key):
+    def text(self, key: str) -> Optional[str]:
         """Paramètre texte de l'instance du composant dans le flow, ou None."""
         return self._text(self.config, key)
 
-    def number(self, key):
+    def number(self, key: str) -> Optional[float]:
         return self._number(self.config, key)
 
-    def flag(self, key, default=False):
+    def flag(self, key: str, default: bool = False) -> bool:
         value = self.config.get(key)
         return value if isinstance(value, bool) else default
 
-    def plugin_text(self, key):
+    def plugin_text(self, key: str) -> Optional[str]:
         """Configuration effective du plugin (valeurs globales fusionnées avec les dérogations du flow)."""
         return self._text(self.plugin_config, key)
 
-    def plugin_number(self, key):
+    def plugin_number(self, key: str) -> Optional[float]:
         return self._number(self.plugin_config, key)
 
 
-def load_manifest(script_path, plugin_id):
+def load_manifest(script_path: str, plugin_id: str) -> Dict[str, Json]:
     """Charge le manifeste du plugin.
 
     Le serveur et le plugin utilisent le même JSON : il est cherché dans manifests/<id>.json à côté du script
@@ -133,15 +141,15 @@ def load_manifest(script_path, plugin_id):
 
 
 class Plugin:
-    def __init__(self, manifest):
+    def __init__(self, manifest: Dict[str, Json]) -> None:
         if manifest.get("contractVersion") != CONTRACT_VERSION or CONTRACT_VERSION not in manifest.get("supportedHostContractVersions", []):
             raise ContractError("Le manifeste doit déclarer le contrat hôte %d." % CONTRACT_VERSION)
         self.manifest = manifest
-        self._handlers = {}
+        self._handlers: Dict[str, Handler] = {}
 
-    def component(self, component_id):
+    def component(self, component_id: str) -> Callable[[Handler], Handler]:
         """Décorateur : associe une fonction ctx -> Outcome à un composant du manifeste."""
-        def register(handler):
+        def register(handler: Handler) -> Handler:
             if component_id not in {c["id"] for c in self.manifest["components"]}:
                 raise ContractError("Composant absent du manifeste : %s." % component_id)
             if component_id in self._handlers:
@@ -150,7 +158,7 @@ class Plugin:
             return handler
         return register
 
-    def run(self, stdin=None, stdout=None, stderr=None):
+    def run(self, stdin: Optional[Any] = None, stdout: Optional[Any] = None, stderr: Optional[Any] = None) -> int:
         """Traite une requête. Retourne 0 si une réponse valide a été écrite, 1 pour un échec."""
         stdin = stdin or sys.stdin
         stdout = stdout or sys.stdout
@@ -185,7 +193,8 @@ class Plugin:
             stderr.write("Erreur inattendue (%s).\n" % type(error).__name__)
             return 1
 
-    def simulate(self, component_id, config=None, plugin_config=None, media_path=None, library_id=None, variables=None):
+    def simulate(self, component_id: str, config: Optional[Dict[str, Json]] = None, plugin_config: Optional[Dict[str, Json]] = None,
+                 media_path: Optional[str] = None, library_id: Optional[str] = None, variables: Optional[Dict[str, Json]] = None) -> Dict[str, Json]:
         """Exécute un composant sans processus ni cluster, avec une invocation fabriquée. Retourne la réponse du contrat."""
         component = next((c for c in self.manifest["components"] if c["id"] == component_id), None)
         if component is None:
@@ -199,14 +208,14 @@ class Plugin:
             "context": {"mediaPath": media_path, "libraryId": library_id, "variables": variables or {}, "currentArtifactId": "current"},
         })
 
-    def main(self, argv=None):
+    def main(self, argv: Optional[List[str]] = None) -> int:
         """Point d'entrée d'un plugin : protocole sur stdin/stdout, ou --simulate pour le développement local."""
         argv = list(sys.argv[1:] if argv is None else argv)
         if not argv or argv[0] != "--simulate":
             return self.run()
         try:
             component_id = argv[1]
-            options = {"config": json.loads(argv[2]) if len(argv) > 2 and not argv[2].startswith("--") else {}}
+            options: Dict[str, Json] = {"config": json.loads(argv[2]) if len(argv) > 2 and not argv[2].startswith("--") else {}}
             rest = argv[3:] if len(argv) > 2 and not argv[2].startswith("--") else argv[2:]
             for flag, value in zip(rest[::2], rest[1::2]):
                 if flag == "--plugin-config":
@@ -223,7 +232,7 @@ class Plugin:
             sys.stderr.write("simulate : %s\n" % (error or "arguments invalides"))
             return 1
 
-    def _execute(self, invocation):
+    def _execute(self, invocation: Json) -> Dict[str, Json]:
         if not isinstance(invocation, dict):
             raise ContractError("Invocation absente.")
         reference = invocation.get("component") or {}
@@ -256,19 +265,19 @@ class Plugin:
 
 # --- correspondance de chemins (même format et mêmes règles que Encoding.Contracts LibraryPathMapping) -------------
 
-def _normalize_remote(path):
+def _normalize_remote(path: str) -> str:
     normalized = path.strip().replace("\\", "/")
     while "//" in normalized:
         normalized = normalized.replace("//", "/")
     return normalized.rstrip("/") if len(normalized) > 1 else normalized
 
 
-def parse_mappings(text):
+def parse_mappings(text: Optional[str]) -> Dict[str, str]:
     """Parse « identifiant-bibliothèque=/chemin/vu/par/le/service », une ligne par bibliothèque.
 
     Retourne {identifiant: racine}. Lève ValueError si le format est invalide.
     """
-    result = {}
+    result: Dict[str, str] = {}
     for raw in (text or "").split("\n"):
         line = raw.strip()
         if not line or line.startswith("#"):
@@ -284,13 +293,13 @@ def parse_mappings(text):
     return result
 
 
-def to_remote(mappings, library_id, relative_path):
+def to_remote(mappings: Dict[str, str], library_id: Json, relative_path: str) -> Optional[str]:
     """Chemin d'un fichier de la bibliothèque tel que le service le voit, ou None si elle n'est pas associée."""
     root = mappings.get(str(uuid.UUID(str(library_id))))
     return None if root is None else root.rstrip("/") + "/" + relative_path.replace("\\", "/")
 
 
-def remote_path(ctx):
+def remote_path(ctx: Context) -> Tuple[Optional[str], Optional[str]]:
     """(chemin du fichier traité vu par le service, message d'erreur métier) d'après la configuration du plugin."""
     if not ctx.library_id or not ctx.media_path:
         return None, "Le fichier traité n'est pas rattaché à une bibliothèque."
@@ -304,22 +313,22 @@ def remote_path(ctx):
     return path, None
 
 
-def norm_path(path):
+def norm_path(path: str) -> str:
     """Chemin avec des séparateurs « / », pour comparer des chemins Windows et POSIX."""
     return path.replace("\\", "/")
 
 
-def same_path(left, right):
+def same_path(left: str, right: str) -> bool:
     return norm_path(left) == norm_path(right)
 
 
-def longest_prefix_match(candidates, path):
+def longest_prefix_match(candidates: Iterable[Tuple[str, T]], path: str) -> Optional[T]:
     """Valeur de la paire (dossier, valeur) dont le dossier est le plus long préfixe du fichier, sinon None.
 
     La frontière de dossier est respectée (/a/b ne contient pas /a/bc/f). En cas d'égalité, le premier gagne.
     """
     target = norm_path(path)
-    best = None
+    best: Optional[Tuple[int, T]] = None
     for folder, value in candidates:
         prefix = norm_path(folder).rstrip("/") + "/"
         if target.startswith(prefix) and (best is None or len(prefix) > best[0]):
@@ -330,7 +339,7 @@ def longest_prefix_match(candidates, path):
 # --- client HTTP JSON ---------------------------------------------------------------------------------------------
 
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, *args, **kwargs):
+    def redirect_request(self, *args: Any, **kwargs: Any) -> None:
         return None
 
 
@@ -345,7 +354,7 @@ class JsonApi:
     MAX_RESPONSE_BYTES = 64 * 1024 * 1024
     TIMEOUT_SECONDS = 30
 
-    def __init__(self, name, base_url, headers, opener=None):
+    def __init__(self, name: str, base_url: str, headers: Dict[str, str], opener: Optional[Any] = None) -> None:
         parts = urllib.parse.urlsplit(base_url or "")
         if parts.scheme not in ("http", "https") or not parts.hostname or parts.username or parts.password:
             raise InfrastructureError("L'adresse de %s doit être une URL HTTP ou HTTPS sans identifiant intégré." % name)
@@ -354,7 +363,7 @@ class JsonApi:
         self.headers = dict(headers)
         self.opener = opener or urllib.request.build_opener(_NoRedirect)
 
-    def request(self, method, path, body=None):
+    def request(self, method: str, path: str, body: Json = None) -> Tuple[int, Json]:
         data = None if body is None else json.dumps(body).encode("utf-8")
         request = urllib.request.Request(self.base + path, data=data, method=method)
         request.add_header("Accept", "application/json")
@@ -394,9 +403,9 @@ _FLOW_COMPONENT_CATEGORIES = {
 }
 
 
-def validate_manifest(manifest):
+def validate_manifest(manifest: Json) -> List[str]:
     """Retourne la liste des problèmes d'un manifeste (vide si le serveur l'acceptera). Ne lève jamais."""
-    problems = []
+    problems: List[str] = []
     if not isinstance(manifest, dict):
         return ["Le manifeste doit être un objet JSON."]
     plugin_id = manifest.get("id")
@@ -411,7 +420,7 @@ def validate_manifest(manifest):
     if not isinstance(manifest.get("name"), str) or not manifest["name"].strip():
         problems.append("name : requis.")
 
-    def check_fields(owner, fields, allowed):
+    def check_fields(owner: str, fields: Json, allowed: Tuple[str, ...]) -> None:
         seen = set()
         if not isinstance(fields, list):
             problems.append("%s : « fields » doit être une liste." % owner)
@@ -480,7 +489,7 @@ def validate_manifest(manifest):
     return problems
 
 
-def _cli(argv):
+def _cli(argv: List[str]) -> int:
     if len(argv) == 2 and argv[0] == "validate":
         try:
             with open(argv[1], encoding="utf-8") as handle:

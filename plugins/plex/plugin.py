@@ -11,29 +11,32 @@ import os
 import sys
 import time
 import urllib.parse
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 for candidate in (HERE, os.path.join(HERE, "..", "sdk")):
     if os.path.isdir(candidate) and candidate not in sys.path:
         sys.path.insert(0, candidate)
 
-from encoding_plugin_sdk import InfrastructureError, JsonApi, Outcome, Plugin, load_manifest, longest_prefix_match, remote_path, same_path  # noqa: E402
+from encoding_plugin_sdk import Context, InfrastructureError, JsonApi, Outcome, Plugin, load_manifest, longest_prefix_match, remote_path, same_path  # noqa: E402
 
 POLL_SECONDS = 2
 DEFAULT_WAIT_SECONDS = 120
 MAX_WAIT_SECONDS = 600
 SAFETY_MARGIN_SECONDS = 5
-ITEM_TYPES = {"movie": 1, "show": 4}  # l'épisode est l'élément qui porte un fichier
+Section = Tuple[str, Optional[str], List[str], bool]
+Session = Dict[str, Any]
+ITEM_TYPES: Dict[str, int] = {"movie": 1, "show": 4}  # l'épisode est l'élément qui porte un fichier
 
 
 class PlexClient:
-    def __init__(self, base_url, token, opener=None):
+    def __init__(self, base_url: str, token: str, opener: Optional[Any] = None) -> None:
         self.api = JsonApi("Plex", base_url, {"X-Plex-Token": token}, opener)
 
-    def sections(self):
+    def sections(self) -> List[Section]:
         """[(clé, type, [dossiers], en cours de scan)] de chaque section."""
         _, payload = self.api.request("GET", "library/sections")
-        result = []
+        result: List[Section] = []
         for directory in ((payload or {}).get("MediaContainer") or {}).get("Directory") or []:
             if isinstance(directory, dict) and directory.get("key") is not None:
                 locations = [loc["path"] for loc in directory.get("Location") or [] if isinstance(loc, dict) and isinstance(loc.get("path"), str)]
@@ -41,22 +44,22 @@ class PlexClient:
                 result.append((str(directory["key"]), directory.get("type"), locations, refreshing))
         return result
 
-    def refresh(self, section, folder=None):
+    def refresh(self, section: str, folder: Optional[str] = None) -> None:
         query = "" if folder is None else "?" + urllib.parse.urlencode({"path": folder})
         self.api.request("GET", "library/sections/%s/refresh%s" % (urllib.parse.quote(section, safe=""), query))
 
-    def metadata_exists(self, rating_key):
+    def metadata_exists(self, rating_key: str) -> bool:
         status, _ = self.api.request("GET", "library/metadata/%s" % urllib.parse.quote(rating_key, safe=""))
         return status != 404
 
-    def playing_sessions(self):
+    def playing_sessions(self) -> List[Session]:
         """Sessions de lecture en cours (lectures en pause comprises) : [{files, episode, remaining}].
 
         files = fichiers de la session (vide si inconnus) ; episode = (série, saison, épisode) d'un épisode, sinon None ;
         remaining = secondes restantes avant la fin du contenu, ou None si Plex ne les donne pas.
         """
         _, payload = self.api.request("GET", "status/sessions")
-        sessions = []
+        sessions: List[Session] = []
         for item in ((payload or {}).get("MediaContainer") or {}).get("Metadata") or []:
             files = [part.get("file") for media in item.get("Media") or [] for part in media.get("Part") or [] if isinstance(part.get("file"), str)]
             duration, offset = item.get("duration"), item.get("viewOffset")
@@ -64,7 +67,7 @@ class PlexClient:
             sessions.append({"files": files, "episode": episode_of(item), "remaining": remaining})
         return sessions
 
-    def find_item(self, section, kind, path):
+    def find_item(self, section: str, kind: Optional[str], path: str) -> Optional[Dict[str, Any]]:
         """Élément Plex qui porte exactement ce fichier, ou None."""
         query = {"file": path, "X-Plex-Container-Start": 0, "X-Plex-Container-Size": 50}
         if kind in ITEM_TYPES:
@@ -77,13 +80,13 @@ class PlexClient:
                         return item
         return None
 
-    def has_file(self, section, kind, path):
+    def has_file(self, section: str, kind: Optional[str], path: str) -> bool:
         return self.find_item(section, kind, path) is not None
 
-    def analyze(self, rating_key):
+    def analyze(self, rating_key: Any) -> None:
         self.api.request("PUT", "library/metadata/%s/analyze" % urllib.parse.quote(str(rating_key), safe=""))
 
-def episode_of(item):
+def episode_of(item: Dict[str, Any]) -> Optional[Tuple[str, int, int]]:
     """(série, saison, épisode) d'un épisode Plex, ou None pour tout autre élément."""
     if item.get("type") != "episode":
         return None
@@ -93,7 +96,8 @@ def episode_of(item):
     return str(series), season, number
 
 
-def blocks_playback(sessions, path, episode=None, include_next=False, margin_minutes=0):
+def blocks_playback(sessions: List[Session], path: str, episode: Optional[Tuple[str, int, int]] = None,
+                    include_next: bool = False, margin_minutes: float = 0) -> bool:
     """True si une lecture concerne ce fichier.
 
     Une session sur le fichier lui-même compte toujours. Avec include_next, une session sur l'épisode précédent de la
@@ -112,12 +116,12 @@ def blocks_playback(sessions, path, episode=None, include_next=False, margin_min
     return False
 
 
-def section_for(sections, path):
+def section_for(sections: List[Section], path: str) -> Optional[Section]:
     """Section dont un dossier est le plus long préfixe du fichier (frontière de dossier respectée)."""
     return longest_prefix_match(((location, section) for section in sections for location in section[2]), path)
 
 
-def wait_seconds(ctx, now=None):
+def wait_seconds(ctx: Context, now: Optional[datetime.datetime] = None) -> float:
     """Durée d'attente permise : jusqu'à l'échéance de l'invocation (moins une marge), bornée."""
     try:
         deadline = datetime.datetime.fromisoformat(str(ctx.invocation.get("deadline")))
@@ -127,10 +131,10 @@ def wait_seconds(ctx, now=None):
     return max(0, min(MAX_WAIT_SECONDS, remaining))
 
 
-def build(opener=None, sleep=time.sleep, clock=time.monotonic):
+def build(opener: Optional[Any] = None, sleep: Callable[[float], None] = time.sleep, clock: Callable[[], float] = time.monotonic) -> Plugin:
     plugin = Plugin(load_manifest(__file__, "plex"))
 
-    def client(ctx):
+    def client(ctx: Context) -> PlexClient:
         base_url, token = ctx.plugin_text("baseUrl"), ctx.plugin_text("apiKey")
         if base_url is None:
             raise InfrastructureError("L'adresse de Plex n'est pas configurée.")
@@ -138,14 +142,14 @@ def build(opener=None, sleep=time.sleep, clock=time.monotonic):
             raise InfrastructureError("Le jeton de Plex n'est pas configuré.")
         return PlexClient(base_url, token, opener)
 
-    def locate(ctx, api):
+    def locate(ctx: Context, api: PlexClient) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """(section, chemin vu par Plex, erreur métier). Section None et pas d'erreur = toutes les sections."""
         explicit = ctx.number("sectionId")
         mapped = ctx.plugin_text("pathMappings") is not None
         if not mapped:
             return (None if explicit is None else str(int(explicit))), None, None
         path, error = remote_path(ctx)
-        if error:
+        if path is None:
             return None, None, error
         if explicit is not None:
             return str(int(explicit)), path, None
@@ -155,7 +159,7 @@ def build(opener=None, sleep=time.sleep, clock=time.monotonic):
         return section[0], path, None
 
     @plugin.component("plex-refresh-library")
-    def refresh(ctx):
+    def refresh(ctx: Context) -> Outcome:
         api = client(ctx)
         section, path, error = locate(ctx, api)
         if error:
@@ -169,7 +173,7 @@ def build(opener=None, sleep=time.sleep, clock=time.monotonic):
         return Outcome.output("success", "L'actualisation de la bibliothèque Plex %s a été demandée." % section)
 
     @plugin.component("plex-wait-library-scan")
-    def wait(ctx):
+    def wait(ctx: Context) -> Outcome:
         api = client(ctx)
         section, _, error = locate(ctx, api)
         if error:
@@ -185,13 +189,13 @@ def build(opener=None, sleep=time.sleep, clock=time.monotonic):
             sleep(POLL_SECONDS)
 
     @plugin.component("plex-check-media-indexed")
-    def check(ctx):
+    def check(ctx: Context) -> Outcome:
         api = client(ctx)
         rating_key = ctx.text("ratingKey")
         if rating_key is not None:
             return Outcome.output("found", "Élément connu de Plex.") if api.metadata_exists(rating_key) else Outcome.output("notFound", "Élément absent de Plex.")
         path, error = remote_path(ctx)
-        if error:
+        if path is None:
             return Outcome.output("error", error)
         section = section_for(api.sections(), path)
         if section is None:
@@ -199,13 +203,13 @@ def build(opener=None, sleep=time.sleep, clock=time.monotonic):
         return Outcome.output("found", "Fichier connu de Plex.") if api.has_file(section[0], section[1], path) else Outcome.output("notFound", "Fichier absent de Plex.")
 
     @plugin.component("plex-check-playback")
-    def playback(ctx):
+    def playback(ctx: Context) -> Outcome:
         api = client(ctx)
         sessions = api.playing_sessions()
         if ctx.text("scope") == "global":
             return Outcome.output("playing", "Plex est en cours de lecture.") if sessions else Outcome.output("idle", "Aucune lecture en cours dans Plex.")
         path, error = remote_path(ctx)
-        if error:
+        if path is None:
             return Outcome.output("error", error)
         include_next = ctx.flag("includeNextEpisode")
         episode = None
@@ -221,12 +225,12 @@ def build(opener=None, sleep=time.sleep, clock=time.monotonic):
         return Outcome.output("playing", "L'épisode précédent est en cours de lecture : la lecture enchaînera sur ce fichier.")
 
     @plugin.component("plex-analyze-media")
-    def analyze(ctx):
+    def analyze(ctx: Context) -> Outcome:
         api = client(ctx)
         rating_key = ctx.text("ratingKey")
         if rating_key is None:
             path, error = remote_path(ctx)
-            if error:
+            if path is None:
                 return Outcome.output("error", error)
             section = section_for(api.sections(), path)
             item = None if section is None else api.find_item(section[0], section[1], path)

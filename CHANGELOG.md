@@ -9,6 +9,7 @@ Les paquets publiés sont immuables : chaque modification de sources passe par u
 - `plugins/packages.json` : source de vérité du contenu des paquets et des métadonnées de l'index.
 - CI GitHub Actions (lint, intégrité, immuabilité, tests) et workflow de release avec attestation de provenance.
 - Schéma `schemas/repository.schema.json`.
+- Typage complet (mypy, `disallow_untyped_defs`) du SDK Python, des plugins et de `scripts/store.py`, vérifié en CI.
 - SDK : `norm_path`, `same_path`, `longest_prefix_match` ; suppression de la copie dupliquée `plugins/encoding_plugin_sdk.py` et du chemin de repli vers le dépôt du moteur.
 
 ### Plugins

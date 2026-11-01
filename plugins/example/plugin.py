@@ -16,21 +16,21 @@ for candidate in (HERE, os.path.join(HERE, "..", "sdk")):
     if os.path.isdir(candidate) and candidate not in sys.path:
         sys.path.insert(0, candidate)
 
-from encoding_plugin_sdk import Outcome, Plugin  # noqa: E402
+from encoding_plugin_sdk import Context, Outcome, Plugin  # noqa: E402
 
 with open(os.path.join(HERE, "manifest.json"), encoding="utf-8") as handle:
     plugin = Plugin(json.load(handle))
 
 
 @plugin.component("example-tag-file")
-def tag_file(ctx):
+def tag_file(ctx: Context) -> Outcome:
     name = ctx.text("name") or "tag"
     value = ctx.text("value") or os.path.basename(ctx.media_path or "")
     return Outcome.output("success", "Variable %s enregistrée." % name, variables={name: value})
 
 
 @plugin.component("example-name-matches")
-def name_matches(ctx):
+def name_matches(ctx: Context) -> Outcome:
     text = (ctx.text("text") or "").lower()
     return Outcome.output("yes" if text in (ctx.media_path or "").lower() else "no")
 

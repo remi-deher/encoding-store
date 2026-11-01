@@ -3,13 +3,14 @@
 ## Prérequis
 
 ```sh
-pip install fastjsonschema ruff
+pip install fastjsonschema ruff mypy
 ```
 
 ## Vérifications locales (les mêmes que la CI)
 
 ```sh
 ruff check .
+mypy                                          # SDK, plugins Python et scripts/store.py
 python3 scripts/store.py verify              # hashes, schémas, archives contre sources, orphelins
 python3 -m unittest discover -s scripts/tests -v
 python3 -m unittest discover -s plugins/tests -v

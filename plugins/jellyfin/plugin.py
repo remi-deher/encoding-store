@@ -13,53 +13,55 @@ for candidate in (HERE, os.path.join(HERE, "..", "sdk")):
     if os.path.isdir(candidate) and candidate not in sys.path:
         sys.path.insert(0, candidate)
 
-from encoding_plugin_sdk import InfrastructureError, JsonApi, Outcome, Plugin, load_manifest, remote_path, same_path  # noqa: E402
+from typing import Any, Dict, List, Optional
+
+from encoding_plugin_sdk import Context, InfrastructureError, JsonApi, Outcome, Plugin, load_manifest, remote_path, same_path  # noqa: E402
 
 REFRESH_QUERY = "Recursive=false&MetadataRefreshMode=FullRefresh&ImageRefreshMode=FullRefresh&ReplaceAllMetadata=false"
 
 
 class JellyfinClient:
-    def __init__(self, base_url, api_key, opener=None):
+    def __init__(self, base_url: str, api_key: str, opener: Optional[Any] = None) -> None:
         self.api = JsonApi("Jellyfin", base_url, {"X-Emby-Token": api_key}, opener)
 
-    def items(self, query):
+    def items(self, query: Dict[str, str]) -> List[Dict[str, Any]]:
         _, payload = self.api.request("GET", "Items?" + urllib.parse.urlencode(query))
         return [i for i in (payload or {}).get("Items") or [] if isinstance(i, dict) and isinstance(i.get("Id"), str)]
 
-    def item_id_for_path(self, path):
+    def item_id_for_path(self, path: str) -> Optional[str]:
         """Identifiant de l'élément dont le fichier est exactement ce chemin (le filtre serveur est revérifié)."""
         for item in self.items({"Recursive": "true", "Path": path, "Fields": "Path", "IncludeItemTypes": "Movie,Episode,Video,Audio"}):
             if isinstance(item.get("Path"), str) and same_path(item["Path"], path):
                 return item["Id"]
         return None
 
-    def item_exists(self, item_id):
+    def item_exists(self, item_id: str) -> bool:
         return any(i["Id"].replace("-", "").lower() == item_id.replace("-", "").lower() for i in self.items({"ids": item_id}))
 
-    def playing_files(self):
+    def playing_files(self) -> List[Optional[str]]:
         """Fichiers des sessions qui lisent un contenu (lectures en pause comprises) ; None = fichier inconnu."""
         _, payload = self.api.request("GET", "Sessions")
-        result = []
+        result: List[Optional[str]] = []
         for session in payload or []:
             item = session.get("NowPlayingItem") if isinstance(session, dict) else None
             if isinstance(item, dict):
                 result.append(item.get("Path") if isinstance(item.get("Path"), str) else None)
         return result
 
-    def refresh_item(self, item_id):
+    def refresh_item(self, item_id: str) -> None:
         self.api.request("POST", "Items/%s/Refresh?%s" % (urllib.parse.quote(item_id, safe=""), REFRESH_QUERY))
 
-    def media_updated(self, path):
+    def media_updated(self, path: str) -> None:
         self.api.request("POST", "Library/Media/Updated", {"Updates": [{"Path": path, "UpdateType": "Modified"}]})
 
-    def refresh_library(self):
+    def refresh_library(self) -> None:
         self.api.request("POST", "Library/Refresh")
 
 
-def build(opener=None):
+def build(opener: Optional[Any] = None) -> Plugin:
     plugin = Plugin(load_manifest(__file__, "jellyfin"))
 
-    def client(ctx):
+    def client(ctx: Context) -> JellyfinClient:
         base_url, key = ctx.plugin_text("baseUrl"), ctx.plugin_text("apiKey")
         if base_url is None:
             raise InfrastructureError("L'adresse de Jellyfin n'est pas configurée.")
@@ -68,12 +70,12 @@ def build(opener=None):
         return JellyfinClient(base_url, key, opener)
 
     @plugin.component("jellyfin-refresh-item")
-    def refresh_item(ctx):
+    def refresh_item(ctx: Context) -> Outcome:
         api = client(ctx)
         item_id = ctx.text("itemId")
         if item_id is None:
             path, error = remote_path(ctx)
-            if error:
+            if path is None:
                 return Outcome.output("error", error)
             item_id = api.item_id_for_path(path)
             if item_id is None:
@@ -82,38 +84,38 @@ def build(opener=None):
         return Outcome.output("success", "L'actualisation de l'élément a été demandée à Jellyfin.")
 
     @plugin.component("jellyfin-refresh-library")
-    def refresh_library(ctx):
+    def refresh_library(ctx: Context) -> Outcome:
         api = client(ctx)
         if ctx.plugin_text("pathMappings") is None:
             api.refresh_library()
             return Outcome.output("success", "Le scan des bibliothèques a été demandé à Jellyfin.")
         path, error = remote_path(ctx)
-        if error:
+        if path is None:
             return Outcome.output("error", error)
         api.media_updated(path)
         return Outcome.output("success", "Jellyfin a été informé de la modification du fichier.")
 
     @plugin.component("jellyfin-check-item-indexed")
-    def check(ctx):
+    def check(ctx: Context) -> Outcome:
         api = client(ctx)
         item_id = ctx.text("itemId")
         if item_id is not None:
             found = api.item_exists(item_id)
         else:
             path, error = remote_path(ctx)
-            if error:
+            if path is None:
                 return Outcome.output("error", error)
             found = api.item_id_for_path(path) is not None
         return Outcome.output("found", "Élément connu de Jellyfin.") if found else Outcome.output("notFound", "Élément absent de Jellyfin.")
 
     @plugin.component("jellyfin-check-playback")
-    def playback(ctx):
+    def playback(ctx: Context) -> Outcome:
         api = client(ctx)
         files = api.playing_files()
         if ctx.text("scope") == "global":
             return Outcome.output("playing", "Jellyfin est en cours de lecture.") if files else Outcome.output("idle", "Aucune lecture en cours dans Jellyfin.")
         path, error = remote_path(ctx)
-        if error:
+        if path is None:
             return Outcome.output("error", error)
         if any(f is not None and same_path(f, path) for f in files):
             return Outcome.output("playing", "Le fichier est en cours de lecture dans Jellyfin.")

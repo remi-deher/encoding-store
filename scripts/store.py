@@ -7,6 +7,8 @@
 
 Dépendance : fastjsonschema (pip install fastjsonschema), pour valider les manifestes contre schemas/.
 """
+from __future__ import annotations
+
 import argparse
 import glob
 import hashlib
@@ -17,6 +19,10 @@ import re
 import subprocess
 import sys
 import zipfile
+from typing import Any, Callable
+
+Json = Any
+Problems = list[str]
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INDEX_PATH = os.path.join(ROOT, "repository.json")
@@ -26,34 +32,34 @@ FIXED_DATE = (1980, 1, 1, 0, 0, 0)
 SEMVER = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 
 
-def semver_key(version):
+def semver_key(version: str) -> tuple[int, ...]:
     return tuple(int(part) for part in version.split("."))
 
 
-def read_json(path):
+def read_json(path: str) -> Json:
     with open(path, encoding="utf-8") as handle:
         return json.load(handle)
 
 
-def dump_json(value):
+def dump_json(value: Json) -> str:
     return json.dumps(value, indent=2, ensure_ascii=False) + "\n"
 
 
-def sha256(data):
+def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def archive_path(package_id, version):
+def archive_path(package_id: str, version: str) -> str:
     return os.path.join(ROOT, "packages", package_id, version, version + ".zip")
 
 
-def download_url(ref, package_id, version):
+def download_url(ref: str, package_id: str, version: str) -> str:
     return "%s/%s/packages/%s/%s/%s.zip" % (DOWNLOAD_BASE, ref, package_id, version, version)
 
 
-def load_validator(name):
+def load_validator(name: str) -> Callable[[Json], Json]:
     try:
-        import fastjsonschema
+        import fastjsonschema  # type: ignore[import-untyped]
     except ImportError:
         sys.exit("fastjsonschema est requis : pip install fastjsonschema")
     return fastjsonschema.compile(read_json(os.path.join(ROOT, "schemas", name)))
@@ -61,7 +67,7 @@ def load_validator(name):
 
 # --- contenu attendu d'un paquet de plugin --------------------------------------------------------------------------
 
-def expected_entries(spec, package_id):
+def expected_entries(spec: Json, package_id: str) -> tuple[Json, dict[str, bytes]]:
     """{nom dans l'archive: octets} d'un paquet de plugin, d'après ses sources."""
     entry = spec[package_id]
     manifest_path = os.path.join(ROOT, "plugins", entry["manifest"])
@@ -79,7 +85,7 @@ def expected_entries(spec, package_id):
     return manifest, entries
 
 
-def build_zip(entries):
+def build_zip(entries: dict[str, bytes]) -> bytes:
     """Archive déterministe : ordre trié, horodatage et permissions fixes, plugin.json en premier."""
     buffer = io.BytesIO()
     names = ["plugin.json"] + sorted(name for name in entries if name != "plugin.json")
@@ -93,7 +99,7 @@ def build_zip(entries):
     return buffer.getvalue()
 
 
-def same_entry(name, left, right):
+def same_entry(name: str, left: bytes, right: bytes) -> bool:
     if name.endswith(".json"):
         return json.loads(left) == json.loads(right)
     return left == right
@@ -101,7 +107,7 @@ def same_entry(name, left, right):
 
 # --- index ------------------------------------------------------------------------------------------------------
 
-def sync_metadata(index, spec):
+def sync_metadata(index: Json, spec: Json) -> None:
     plugins = {plugin["id"]: plugin for plugin in index["plugins"]}
     for package_id, entry in spec.items():
         if package_id.startswith("_"):
@@ -117,7 +123,7 @@ def sync_metadata(index, spec):
         plugin.update(ordered)
 
 
-def command_sync_index(_args):
+def command_sync_index(_args: argparse.Namespace) -> int:
     index, spec = read_json(INDEX_PATH), read_json(SPEC_PATH)
     sync_metadata(index, spec)
     with open(INDEX_PATH, "w", encoding="utf-8") as handle:
@@ -126,7 +132,7 @@ def command_sync_index(_args):
     return 0
 
 
-def command_build(args):
+def command_build(args: argparse.Namespace) -> int:
     index, spec = read_json(INDEX_PATH), read_json(SPEC_PATH)
     if args.id not in spec or args.id.startswith("_"):
         sys.exit("Plugin inconnu dans plugins/packages.json : %s" % args.id)
@@ -154,13 +160,13 @@ def command_build(args):
 
 # --- contrôle ---------------------------------------------------------------------------------------------------
 
-def check_zip_names(archive, label, problems):
+def check_zip_names(archive: zipfile.ZipFile, label: str, problems: Problems) -> None:
     for name in archive.namelist():
         if name.startswith("/") or ".." in name.split("/") or "\\" in name:
             problems.append("%s : nom d'entrée dangereux %r." % (label, name))
 
 
-def check_versions(kind, item, problems):
+def check_versions(kind: str, item: Json, problems: Problems) -> None:
     versions = item["versions"]
     label = "%s %s" % (kind, item["id"])
     if not versions:
@@ -173,9 +179,10 @@ def check_versions(kind, item, problems):
         problems.append("%s : latestVersion %s n'est pas la plus récente (%s)." % (label, item["latestVersion"], max(numbers, key=semver_key)))
 
 
-def check_archives(kind, item, validate_manifest, problems, published):
+def check_archives(kind: str, item: Json, validate_manifest: Callable[[Json], Json], problems: Problems,
+                   published: set[str]) -> dict[str, dict[str, bytes]]:
     """Contrôle chaque archive listée : fichier, SHA-256, URL, manifeste interne. Retourne {version: {nom: octets}}."""
-    contents = {}
+    contents: dict[str, dict[str, bytes]] = {}
     for entry in item["versions"]:
         version = entry["version"]
         label = "%s %s %s" % (kind, item["id"], version)
@@ -222,7 +229,7 @@ def check_archives(kind, item, validate_manifest, problems, published):
     return contents
 
 
-def check_licenses(problems):
+def check_licenses(problems: Problems) -> None:
     lock = read_json(os.path.join(ROOT, "tools", "ubuntu-noble-lock.json"))
     for name, package in lock["packages"].items():
         if package["sha256_expected_from_Ubuntu_Packages"] != package["sha256_downloaded"]:
@@ -231,7 +238,7 @@ def check_licenses(problems):
             problems.append("verrou %s : fichier de licence absent (%s)." % (name, package["copyrightPath"]))
 
 
-def check_immutability(base, problems):
+def check_immutability(base: str, problems: Problems) -> None:
     result = subprocess.run(["git", "diff", "--name-status", "--no-renames", base, "--", "packages"], cwd=ROOT, capture_output=True, text=True, check=False)
     if result.returncode != 0:
         problems.append("git diff %s a échoué : %s" % (base, result.stderr.strip()))
@@ -242,16 +249,16 @@ def check_immutability(base, problems):
             problems.append("%s : un paquet publié est immuable (statut %s)." % (path, status))
 
 
-def command_verify(args):
+def command_verify(args: argparse.Namespace) -> int:
     index, spec = read_json(INDEX_PATH), read_json(SPEC_PATH)
-    problems = []
+    problems: Problems = []
     try:
         load_validator("repository.schema.json")(index)
     except Exception as error:  # noqa: BLE001
         problems.append("repository.json non conforme au schéma (%s)." % error)
     categories = {category["id"] for category in index["categories"]}
-    published = set()
-    contents = {}
+    published: set[str] = set()
+    contents: dict[str, dict[str, dict[str, bytes]]] = {}
     plugin_validator, tool_validator = load_validator("plugin-package.schema.json"), load_validator("tool-package.schema.json")
     for plugin in index["plugins"]:
         if plugin["category"] not in categories:
@@ -274,7 +281,7 @@ def command_verify(args):
     return 1 if problems else 0
 
 
-def check_plugin_sources(index, spec, contents, problems):
+def check_plugin_sources(index: Json, spec: Json, contents: dict[str, dict[str, dict[str, bytes]]], problems: Problems) -> None:
     plugins = {plugin["id"]: plugin for plugin in index["plugins"]}
     sources = {key for key in spec if not key.startswith("_")}
     for package_id in sorted(sources - set(plugins)):
@@ -285,7 +292,7 @@ def check_plugin_sources(index, spec, contents, problems):
         check_one_plugin(plugins[package_id], spec, contents[package_id], problems)
 
 
-def check_one_plugin(plugin, spec, published_versions, problems):
+def check_one_plugin(plugin: Json, spec: Json, published_versions: dict[str, dict[str, bytes]], problems: Problems) -> None:
     package_id = plugin["id"]
     entry = spec[package_id]
     for key in ("name", "summary", "category"):
@@ -307,7 +314,7 @@ def check_one_plugin(plugin, spec, published_versions, problems):
             problems.append("plugin %s %s : %s diffère des sources (modifiez la version puis reconstruisez)." % (package_id, version, name))
 
 
-def main(argv):
+def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
     verify = commands.add_parser("verify")

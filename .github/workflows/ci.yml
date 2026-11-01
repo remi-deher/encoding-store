@@ -21,9 +21,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: pip install fastjsonschema ruff
+      - run: pip install fastjsonschema ruff mypy
       - name: Lint
         run: ruff check .
+      - name: Type check
+        run: mypy
       - name: Catalogue integrity (hashes, schemas, archives vs sources)
         run: python3 scripts/store.py verify
       - name: Published packages are immutable

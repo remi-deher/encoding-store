@@ -174,7 +174,7 @@
         {
           "version": "1.0.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/jellyfin/1.0.1/1.0.1.zip",
-          "sha256": "e78f0f80d57e1aa8e9ea2570743db31c0df3db04d2d5f6acd5594b339002e5f8"
+          "sha256": "5c5f4a048eb0aba348d084b44dbb04b5785b2f2bf5c7dbe38fe014f8fcd13e2b"
         }
       ]
     },
@@ -234,7 +234,7 @@
         {
           "version": "1.1.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/plex/1.1.1/1.1.1.zip",
-          "sha256": "8f5b56297a1bd5a490945db787ae91f1b704710ea04d261110d9c9b4688d84c5"
+          "sha256": "e14de108e5382dc621f63c6c5f4e9ec76ebea701a1356a05541c396b78ef82c4"
         }
       ]
     },
@@ -279,7 +279,7 @@
         {
           "version": "1.0.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/radarr/1.0.1/1.0.1.zip",
-          "sha256": "507d8e43d4cba6a4854ebc421ed8eae628327be3d8ad4bbb78da18524015b265"
+          "sha256": "2dc07d90e3e86a8bac41d793b5af53e7f48072f5b84c5fb06eeab6d70b87e949"
         }
       ]
     },
@@ -299,7 +299,7 @@
         {
           "version": "1.0.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/sonarr/1.0.1/1.0.1.zip",
-          "sha256": "f0433dd5848daa4cdf819162b81abe606a66de761997562f2a5c4f9aa2e68c34"
+          "sha256": "cb42a9f4c4722169a5c07a8d40fe429037b5d4058f59ec85d2bc7a4f7f031b08"
         }
       ]
     },
