@@ -592,12 +592,21 @@ class AuthoringToolsTests(unittest.TestCase):
             return json.load(handle)
 
     def test_shipped_manifests_validate(self):
-        catalog = os.path.join(PLUGINS, "..", "src", "Encoding.Api", "Flows", "Catalog")
-        for name in ("sonarr", "radarr", "plex", "jellyfin"):
-            self.assertEqual([], sdk.validate_manifest(self.load("..", "src", "Encoding.Api", "Flows", "Catalog", name + ".json")), name)
+        # Les manifestes natifs relèvent du moteur : seuls ceux des plugins à processus suivent les règles du SDK.
+        for name in ("plex/manifests/plex", "jellyfin/manifests/jellyfin", "arr/manifests/sonarr", "arr/manifests/radarr"):
+            path = os.path.join(PLUGINS, *name.split("/")) + ".json"
+            with open(path, encoding="utf-8") as handle:
+                self.assertEqual([], sdk.validate_manifest(json.load(handle)), path)
         self.assertEqual([], sdk.validate_manifest(self.load("example", "manifest.json")))
         self.assertEqual([], sdk.validate_manifest(self.load("example-js", "manifest.json")))
-        self.assertTrue(os.path.isdir(catalog))
+
+    def test_longest_prefix_match_respects_folder_boundaries(self):
+        candidates = [("/media", "a"), ("/media/tv", "b"), ("C:\\media\\tvshows\\", "c")]
+        self.assertEqual("b", sdk.longest_prefix_match(candidates, "/media/tv/Show/e1.mkv"))
+        self.assertEqual("a", sdk.longest_prefix_match(candidates, "/media/tvshows/e1.mkv"))
+        self.assertEqual("c", sdk.longest_prefix_match(candidates, "C:/media/tvshows/e1.mkv"))
+        self.assertIsNone(sdk.longest_prefix_match(candidates, "/other/e1.mkv"))
+        self.assertTrue(sdk.same_path("a\\b.mkv", "a/b.mkv"))
 
     def test_validation_names_each_problem(self):
         manifest = self.load("example", "manifest.json")

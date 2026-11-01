@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "ai",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "name": "Intelligence Artificielle",
   "supportedHostContractVersions": [
     1

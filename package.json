@@ -1,0 +1,13 @@
+{
+  "name": "encoding-store-tooling",
+  "private": true,
+  "description": "Outils de développement du dépôt (vérification des types du SDK JavaScript). Aucun paquet publié n'en dépend.",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
+}

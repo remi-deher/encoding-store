@@ -1,0 +1,83 @@
+{
+  "_comment": "Source de vérité du contenu des paquets de plugins et de leurs métadonnées dans repository.json. Voir CONTRIBUTING.md.",
+  "ai": {
+    "name": "Intelligence Artificielle", "category": "ai",
+    "summary": "Traduction de sous-titres et enrichissement des métadonnées par IA (composants natifs du moteur).",
+    "manifest": "ai/manifests/ai.json", "runtime": {"type": "native", "entrypoint": ""}
+  },
+  "audio": {
+    "name": "Audio", "category": "audio",
+    "summary": "Encodage, normalisation, extraction et filtrage des pistes audio (composants natifs du moteur).",
+    "manifest": "audio/manifests/audio.json", "runtime": {"type": "native", "entrypoint": ""}
+  },
+  "base": {
+    "name": "Workflow base", "category": "utilities",
+    "summary": "Composants fondamentaux des flows : fichiers d’entrée, scripts, préparation et exécution du traitement (natifs).",
+    "manifest": "base/manifests/base.json", "runtime": {"type": "native", "entrypoint": ""}
+  },
+  "conditions": {
+    "name": "Évaluation des conditions média", "category": "conditions",
+    "summary": "Conditions de flow sur les codecs, la résolution, les canaux, les langues, le HDR et la profondeur de couleur (natifs).",
+    "manifest": "conditions/manifests/conditions.json", "runtime": {"type": "native", "entrypoint": ""}
+  },
+  "images": {
+    "name": "Traitement d'images", "category": "images",
+    "summary": "Conversion, redimensionnement et recadrage d’images (composants natifs du moteur).",
+    "manifest": "images/manifests/images.json", "runtime": {"type": "native", "entrypoint": ""}
+  },
+  "mkv": {
+    "name": "Matroska & MKV", "category": "containers",
+    "summary": "Remux MKV, gestion des pistes, des propriétés et des pièces jointes (composants natifs du moteur).",
+    "manifest": "mkv/manifests/mkv.json", "runtime": {"type": "native", "entrypoint": ""}
+  },
+  "nodes": {
+    "name": "Placement et contraintes de nœuds", "category": "cluster",
+    "summary": "Placement sur un nœud ou un groupe, capacités requises, transfert et reprise sur perte de worker (natifs).",
+    "manifest": "nodes/manifests/nodes.json", "runtime": {"type": "native", "entrypoint": ""}
+  },
+  "probe": {
+    "name": "Sondes & Analyse média", "category": "probe",
+    "summary": "Analyse des médias : pistes, vidéo, audio, HDR et rapport technique (composants natifs du moteur).",
+    "manifest": "probe/manifests/probe.json", "runtime": {"type": "native", "entrypoint": ""}
+  },
+  "subtitles": {
+    "name": "Sous-titres", "category": "subtitles",
+    "summary": "Extraction, conversion, stylage et nettoyage des sous-titres et des polices (composants natifs du moteur).",
+    "manifest": "subtitles/manifests/subtitles.json", "runtime": {"type": "native", "entrypoint": ""}
+  },
+  "video": {
+    "name": "Vidéo", "category": "video",
+    "summary": "Encodage, redimensionnement, rognage, désentrelacement et vérifications vidéo (composants natifs du moteur).",
+    "manifest": "video/manifests/video.json", "runtime": {"type": "native", "entrypoint": ""}
+  },
+  "plex": {
+    "name": "Plex", "category": "media-servers",
+    "summary": "Actualise les bibliothèques Plex, attend la fin du scan, vérifie l’indexation et les lectures en cours.",
+    "manifest": "plex/manifests/plex.json", "runtime": {"type": "python3", "entrypoint": "plugin.py"},
+    "files": {"plugin.py": "plex/plugin.py", "encoding_plugin_sdk.py": "sdk/encoding_plugin_sdk.py"},
+    "manifestInArchive": "manifests/plex.json"
+  },
+  "jellyfin": {
+    "name": "Jellyfin", "category": "media-servers",
+    "summary": "Actualise les bibliothèques et métadonnées Jellyfin, vérifie un élément et les lectures en cours.",
+    "manifest": "jellyfin/manifests/jellyfin.json", "runtime": {"type": "python3", "entrypoint": "plugin.py"},
+    "files": {"plugin.py": "jellyfin/plugin.py", "encoding_plugin_sdk.py": "sdk/encoding_plugin_sdk.py"},
+    "manifestInArchive": "manifests/jellyfin.json"
+  },
+  "sonarr": {
+    "name": "Sonarr", "category": "arr",
+    "summary": "Relit une série Sonarr, lance la recherche des épisodes manquants et vérifie qu’un épisode est connu.",
+    "manifest": "arr/manifests/sonarr.json", "runtime": {"type": "python3", "entrypoint": "main.py"},
+    "files": {"plugin.py": "arr/plugin.py", "encoding_plugin_sdk.py": "sdk/encoding_plugin_sdk.py"},
+    "inline": {"main.py": "import os, sys\nsys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))\nimport plugin\nraise SystemExit(plugin.main([plugin.__file__, 'sonarr']))\n"},
+    "manifestInArchive": "manifests/sonarr.json"
+  },
+  "radarr": {
+    "name": "Radarr", "category": "arr",
+    "summary": "Relit un film Radarr, lance sa recherche et vérifie que le fichier est connu du service.",
+    "manifest": "arr/manifests/radarr.json", "runtime": {"type": "python3", "entrypoint": "main.py"},
+    "files": {"plugin.py": "arr/plugin.py", "encoding_plugin_sdk.py": "sdk/encoding_plugin_sdk.py"},
+    "inline": {"main.py": "import os, sys\nsys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))\nimport plugin\nraise SystemExit(plugin.main([plugin.__file__, 'radarr']))\n"},
+    "manifestInArchive": "manifests/radarr.json"
+  }
+}

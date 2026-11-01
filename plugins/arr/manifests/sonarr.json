@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "sonarr",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Sonarr",
   "supportedHostContractVersions": [
     1

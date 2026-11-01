@@ -1,0 +1,17 @@
+[tool.ruff]
+target-version = "py39"
+line-length = 140
+extend-exclude = ["packages"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B"]
+ignore = ["E501", "E402", "B904"]
+
+[tool.mypy]
+files = ["plugins/sdk", "plugins/arr", "plugins/plex", "plugins/jellyfin", "plugins/example", "scripts/store.py"]
+check_untyped_defs = true
+disallow_untyped_defs = true
+warn_unused_ignores = true
+warn_return_any = false
+explicit_package_bases = true
+mypy_path = "plugins/sdk"

@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "probe",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "name": "Sondes & Analyse média",
   "supportedHostContractVersions": [
     1

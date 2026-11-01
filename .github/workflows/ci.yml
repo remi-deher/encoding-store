@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: pip install fastjsonschema ruff mypy
+      - name: Lint
+        run: ruff check .
+      - name: Type check (Python)
+        run: mypy
+      - name: Type check (JavaScript SDK)
+        run: npm ci && npm run typecheck
+      - name: Catalogue integrity (hashes, schemas, archives vs sources)
+        run: python3 scripts/store.py verify
+      - name: Published packages are immutable
+        if: github.event_name == 'pull_request'
+        run: python3 scripts/store.py verify --base "origin/${{ github.base_ref }}"
+      - name: Store tooling tests
+        run: python3 -m unittest discover -s scripts/tests -v
+      - name: Plugin tests
+        run: python3 -m unittest discover -s plugins/tests -v

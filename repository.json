@@ -56,10 +56,10 @@
     {
       "id": "ai",
       "name": "Intelligence Artificielle",
-      "summary": "Composants ai exécutés par le moteur Encoding.",
+      "summary": "Traduction de sous-titres et enrichissement des métadonnées par IA (composants natifs du moteur).",
       "category": "ai",
       "requiredTools": [],
-      "latestVersion": "1.0.2",
+      "latestVersion": "1.0.3",
       "versions": [
         {
           "version": "1.0.0",
@@ -75,16 +75,21 @@
           "version": "1.0.2",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/ai/1.0.2/1.0.2.zip",
           "sha256": "09b837563a55e1974f5fab49d761d9adca6426601646c57babcf88d2e09d29ad"
+        },
+        {
+          "version": "1.0.3",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/ai/1.0.3/1.0.3.zip",
+          "sha256": "983fbfb6307143ec3a26787b4748cefd70cf4e11b1e9cccd676c35cc9d2fd7b2"
         }
       ]
     },
     {
       "id": "audio",
       "name": "Audio",
-      "summary": "Composants audio exécutés par le moteur Encoding.",
+      "summary": "Encodage, normalisation, extraction et filtrage des pistes audio (composants natifs du moteur).",
       "category": "audio",
       "requiredTools": [],
-      "latestVersion": "1.1.2",
+      "latestVersion": "1.1.3",
       "versions": [
         {
           "version": "1.1.0",
@@ -100,46 +105,61 @@
           "version": "1.1.2",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/audio/1.1.2/1.1.2.zip",
           "sha256": "b1d8247315ead3db78da063f9c07e2ff596cff7a2c024c494127ff94d14d7059"
+        },
+        {
+          "version": "1.1.3",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/audio/1.1.3/1.1.3.zip",
+          "sha256": "c10e3618546579caf7c3e4942edecbe4cb1bdc7fed86be4ce7e9a4739c30fe1d"
         }
       ]
     },
     {
       "id": "base",
       "name": "Workflow base",
-      "summary": "Composants base natifs du moteur, distribués depuis le Store.",
+      "summary": "Composants fondamentaux des flows : fichiers d’entrée, scripts, préparation et exécution du traitement (natifs).",
       "category": "utilities",
       "requiredTools": [],
-      "latestVersion": "1.10.1",
+      "latestVersion": "1.10.2",
       "versions": [
         {
           "version": "1.10.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/base/1.10.1/1.10.1.zip",
           "sha256": "c09a3c13a40bfa11c32315805f1c6053d5f233ee8ed3b681ffaadbf150d243d9"
+        },
+        {
+          "version": "1.10.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/base/1.10.2/1.10.2.zip",
+          "sha256": "4114b4531e1a0f74a724ca6bc67a852d4978fb83c683a2b81861d70900643ba9"
         }
       ]
     },
     {
       "id": "conditions",
       "name": "Évaluation des conditions média",
-      "summary": "Composants conditions natifs du moteur, distribués depuis le Store.",
+      "summary": "Conditions de flow sur les codecs, la résolution, les canaux, les langues, le HDR et la profondeur de couleur (natifs).",
       "category": "conditions",
       "requiredTools": [],
-      "latestVersion": "1.2.1",
+      "latestVersion": "1.2.2",
       "versions": [
         {
           "version": "1.2.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/conditions/1.2.1/1.2.1.zip",
           "sha256": "202562bf6ecb92685c12d297f8103e8dc621f09fcc0a448202489ae4ee3d69dd"
+        },
+        {
+          "version": "1.2.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/conditions/1.2.2/1.2.2.zip",
+          "sha256": "0c3154a9f654e131606317e505e38e3d51129503bc58203cd358dabdc2bff155"
         }
       ]
     },
     {
       "id": "images",
       "name": "Traitement d'images",
-      "summary": "Composants images exécutés par le moteur Encoding.",
+      "summary": "Conversion, redimensionnement et recadrage d’images (composants natifs du moteur).",
       "category": "images",
       "requiredTools": [],
-      "latestVersion": "1.0.2",
+      "latestVersion": "1.0.3",
       "versions": [
         {
           "version": "1.0.0",
@@ -155,31 +175,41 @@
           "version": "1.0.2",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/images/1.0.2/1.0.2.zip",
           "sha256": "4018daa9a2507f81d107afa57c10b83b46368b1ca438be3e5e8ad4aafb3cc8c3"
+        },
+        {
+          "version": "1.0.3",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/images/1.0.3/1.0.3.zip",
+          "sha256": "9fcdbc370dc2f39d32f48b018fa58854f4de8470f38dda65096e11e235a558b0"
         }
       ]
     },
     {
       "id": "jellyfin",
       "name": "Jellyfin",
-      "summary": "Plugin Jellyfin",
+      "summary": "Actualise les bibliothèques et métadonnées Jellyfin, vérifie un élément et les lectures en cours.",
       "category": "media-servers",
       "requiredTools": [],
-      "latestVersion": "1.0.0",
+      "latestVersion": "1.0.1",
       "versions": [
         {
           "version": "1.0.0",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/jellyfin/1.0.0/1.0.0.zip",
           "sha256": "c1c0a03e7a516605e1b8eae656e2dce2ed3bf4dc87bb700c5a03e3e07079133c"
+        },
+        {
+          "version": "1.0.1",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/jellyfin/1.0.1/1.0.1.zip",
+          "sha256": "5c5f4a048eb0aba348d084b44dbb04b5785b2f2bf5c7dbe38fe014f8fcd13e2b"
         }
       ]
     },
     {
       "id": "mkv",
       "name": "Matroska & MKV",
-      "summary": "Composants mkv exécutés par le moteur Encoding.",
+      "summary": "Remux MKV, gestion des pistes, des propriétés et des pièces jointes (composants natifs du moteur).",
       "category": "containers",
       "requiredTools": [],
-      "latestVersion": "1.1.2",
+      "latestVersion": "1.1.3",
       "versions": [
         {
           "version": "1.1.0",
@@ -195,46 +225,61 @@
           "version": "1.1.2",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/mkv/1.1.2/1.1.2.zip",
           "sha256": "95cb1ff9805f7d9db724c82c855d41fdf90ee722bff8386f87ea8ea250ea47c3"
+        },
+        {
+          "version": "1.1.3",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/mkv/1.1.3/1.1.3.zip",
+          "sha256": "eedbb0e84b8c1b53086bc278f1356c75fd43dde25134adc222333403f113c39c"
         }
       ]
     },
     {
       "id": "nodes",
       "name": "Placement et contraintes de nœuds",
-      "summary": "Composants nodes natifs du moteur, distribués depuis le Store.",
+      "summary": "Placement sur un nœud ou un groupe, capacités requises, transfert et reprise sur perte de worker (natifs).",
       "category": "cluster",
       "requiredTools": [],
-      "latestVersion": "1.8.1",
+      "latestVersion": "1.8.2",
       "versions": [
         {
           "version": "1.8.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/nodes/1.8.1/1.8.1.zip",
           "sha256": "38d890f5815fbabaf276b63f61305f63adbb702636fd2833a54cedf92d8492f8"
+        },
+        {
+          "version": "1.8.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/nodes/1.8.2/1.8.2.zip",
+          "sha256": "fd81bcc8a35e3474e373ae6a451dbb33a1aa8e12dad37a162756b3fc8354d6ea"
         }
       ]
     },
     {
       "id": "plex",
       "name": "Plex",
-      "summary": "Plugin Plex",
+      "summary": "Actualise les bibliothèques Plex, attend la fin du scan, vérifie l’indexation et les lectures en cours.",
       "category": "media-servers",
       "requiredTools": [],
-      "latestVersion": "1.1.0",
+      "latestVersion": "1.1.1",
       "versions": [
         {
           "version": "1.1.0",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/plex/1.1.0/1.1.0.zip",
           "sha256": "f985fa72aaa213afdd9d20436cf7fa9ff91847e1bb3fe728dc3e8d6173dcc81a"
+        },
+        {
+          "version": "1.1.1",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/plex/1.1.1/1.1.1.zip",
+          "sha256": "e14de108e5382dc621f63c6c5f4e9ec76ebea701a1356a05541c396b78ef82c4"
         }
       ]
     },
     {
       "id": "probe",
       "name": "Sondes & Analyse média",
-      "summary": "Composants probe exécutés par le moteur Encoding.",
+      "summary": "Analyse des médias : pistes, vidéo, audio, HDR et rapport technique (composants natifs du moteur).",
       "category": "probe",
       "requiredTools": [],
-      "latestVersion": "1.1.2",
+      "latestVersion": "1.1.3",
       "versions": [
         {
           "version": "1.1.0",
@@ -250,46 +295,61 @@
           "version": "1.1.2",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/probe/1.1.2/1.1.2.zip",
           "sha256": "4ca8dae63f43d3c903a1c58c0a21f59d24c6ae223f409eded79415cc8c3ced07"
+        },
+        {
+          "version": "1.1.3",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/probe/1.1.3/1.1.3.zip",
+          "sha256": "468fb2d994a778161595eb55a5ebde5cdd2eef92606760465009b402801894bc"
         }
       ]
     },
     {
       "id": "radarr",
       "name": "Radarr",
-      "summary": "Plugin Radarr",
+      "summary": "Relit un film Radarr, lance sa recherche et vérifie que le fichier est connu du service.",
       "category": "arr",
       "requiredTools": [],
-      "latestVersion": "1.0.0",
+      "latestVersion": "1.0.1",
       "versions": [
         {
           "version": "1.0.0",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/radarr/1.0.0/1.0.0.zip",
           "sha256": "400220d2bfb280a2a2712d35d92cde40987a4921ae98ee2c9a0c703cb488dfbd"
+        },
+        {
+          "version": "1.0.1",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/radarr/1.0.1/1.0.1.zip",
+          "sha256": "2dc07d90e3e86a8bac41d793b5af53e7f48072f5b84c5fb06eeab6d70b87e949"
         }
       ]
     },
     {
       "id": "sonarr",
       "name": "Sonarr",
-      "summary": "Plugin Sonarr",
+      "summary": "Relit une série Sonarr, lance la recherche des épisodes manquants et vérifie qu’un épisode est connu.",
       "category": "arr",
       "requiredTools": [],
-      "latestVersion": "1.0.0",
+      "latestVersion": "1.0.1",
       "versions": [
         {
           "version": "1.0.0",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/sonarr/1.0.0/1.0.0.zip",
           "sha256": "084c66f617a972bca3800f90a800b9e625006e006df27bc69f43c112198ed5ae"
+        },
+        {
+          "version": "1.0.1",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/sonarr/1.0.1/1.0.1.zip",
+          "sha256": "cb42a9f4c4722169a5c07a8d40fe429037b5d4058f59ec85d2bc7a4f7f031b08"
         }
       ]
     },
     {
       "id": "subtitles",
       "name": "Sous-titres",
-      "summary": "Composants subtitles exécutés par le moteur Encoding.",
+      "summary": "Extraction, conversion, stylage et nettoyage des sous-titres et des polices (composants natifs du moteur).",
       "category": "subtitles",
       "requiredTools": [],
-      "latestVersion": "1.3.2",
+      "latestVersion": "1.3.3",
       "versions": [
         {
           "version": "1.3.0",
@@ -305,16 +365,21 @@
           "version": "1.3.2",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/subtitles/1.3.2/1.3.2.zip",
           "sha256": "485170852e0e4bfc709846a14b101854b02c5a2624e7510aae6575f22c3b1cc6"
+        },
+        {
+          "version": "1.3.3",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/subtitles/1.3.3/1.3.3.zip",
+          "sha256": "ccc1c67e155b27b87f7cfcc710aa83bab7727c36454c453f4880de6be84897ca"
         }
       ]
     },
     {
       "id": "video",
       "name": "Vidéo",
-      "summary": "Composants video exécutés par le moteur Encoding.",
+      "summary": "Encodage, redimensionnement, rognage, désentrelacement et vérifications vidéo (composants natifs du moteur).",
       "category": "video",
       "requiredTools": [],
-      "latestVersion": "1.3.2",
+      "latestVersion": "1.3.3",
       "versions": [
         {
           "version": "1.3.0",
@@ -330,6 +395,11 @@
           "version": "1.3.2",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/video/1.3.2/1.3.2.zip",
           "sha256": "c554496b9c5f8f378aebcf4a6b70e94e880448c93709917115240a1d5a6bf597"
+        },
+        {
+          "version": "1.3.3",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/video/1.3.3/1.3.3.zip",
+          "sha256": "77a2166feb2a9616db44d5feacaf8248682cf9f00e2cb4266ecf0a5bde317072"
         }
       ]
     }

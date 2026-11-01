@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "nodes",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "name": "Nœuds",
   "supportedHostContractVersions": [
     1

@@ -10,15 +10,17 @@ correspondance de chemins du plugin (bibliothèque Encoding -> chemin vu par le 
 """
 import os
 import sys
+from typing import Any, Dict, List, Optional, Tuple
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 for candidate in (HERE, os.path.join(HERE, "..", "sdk")):
     if os.path.isdir(candidate) and candidate not in sys.path:
         sys.path.insert(0, candidate)
 
-from encoding_plugin_sdk import InfrastructureError, JsonApi, Outcome, Plugin, load_manifest, remote_path  # noqa: E402,F401
+from encoding_plugin_sdk import Context, Handler, InfrastructureError, JsonApi, Outcome, Plugin, load_manifest, longest_prefix_match, remote_path, same_path  # noqa: E402
 
-FLAVORS = {
+Item = Tuple[int, str, Optional[str]]
+FLAVORS: Dict[str, Dict[str, Any]] = {
     "sonarr": {
         "name": "Sonarr", "api_versions": ("v5", "v3"), "collection": "series", "item_key": "seriesId",
         "refresh": "sonarr-refresh-series", "search": "sonarr-search-missing-episodes", "check": "sonarr-check-episode-indexed",
@@ -39,12 +41,12 @@ FLAVORS = {
 class ArrClient:
     """Client minimal de l'API Sonarr/Radarr (API v5 puis v3 pour Sonarr)."""
 
-    def __init__(self, flavor, base_url, api_key, opener=None):
+    def __init__(self, flavor: Dict[str, Any], base_url: str, api_key: str, opener: Optional[Any] = None) -> None:
         self.flavor = flavor
         self.api = JsonApi(flavor["name"], base_url, {"X-Api-Key": api_key}, opener)
-        self.api_root = None
+        self.api_root: Optional[str] = None
 
-    def _root(self):
+    def _root(self) -> str:
         if self.api_root is None:
             for version in self.flavor["api_versions"]:
                 status, _ = self.api.request("GET", "api/%s/system/status" % version)
@@ -55,18 +57,18 @@ class ArrClient:
                 raise InfrastructureError("L'API de %s est introuvable. Vérifiez l'adresse et la version du service." % self.flavor["name"])
         return self.api_root
 
-    def get(self, path):
+    def get(self, path: str) -> Tuple[int, Any]:
         return self.api.request("GET", self._root() + path)
 
-    def command(self, name, item_id):
+    def command(self, name: str, item_id: int) -> None:
         key = self.flavor["item_key"]
         body = {"name": name, key + "s": [item_id]} if self.flavor["id_list"] else {"name": name, key: item_id}
         self.api.request("POST", self._root() + "command", body)
 
-    def items(self):
+    def items(self) -> List[Item]:
         """(id, dossier, fichier connu pour un film ou None) de chaque série ou film."""
         _, payload = self.get(self.flavor["collection"])
-        result = []
+        result: List[Item] = []
         for item in payload or []:
             if isinstance(item, dict) and isinstance(item.get("id"), int) and isinstance(item.get("path"), str):
                 movie_file = item.get("movieFile")
@@ -74,30 +76,24 @@ class ArrClient:
                 result.append((item["id"], item["path"], known))
         return result
 
-    def episode_file_paths(self, series_id):
+    def episode_file_paths(self, series_id: int) -> List[str]:
         _, payload = self.get("episodefile?seriesId=%d" % series_id)
         return [f["path"] for f in payload or [] if isinstance(f, dict) and isinstance(f.get("path"), str)]
 
 
-def _norm(path):
-    return path.replace("\\", "/")
-
-
-def best_match(items, remote_path):
+def best_match(items: List[Item], path: str) -> Optional[Item]:
     """L'élément dont le dossier est le plus long préfixe du fichier (frontière de dossier respectée)."""
-    target = _norm(remote_path)
-    matches = [item for item in items if target.startswith(_norm(item[1]).rstrip("/") + "/")]
-    return max(matches, key=lambda item: len(item[1]), default=None)
+    return longest_prefix_match(((item[1], item) for item in items), path)
 
 
 # --- composants --------------------------------------------------------------------------------------------------
 
-def build(flavor_id, opener=None):
+def build(flavor_id: str, opener: Optional[Any] = None) -> Plugin:
     flavor = FLAVORS[flavor_id]
     plugin = Plugin(load_manifest(__file__, flavor_id))
     name = flavor["name"]
 
-    def client(ctx):
+    def client(ctx: Context) -> ArrClient:
         base_url = ctx.plugin_text("baseUrl")
         api_key = ctx.plugin_text("apiKey")
         if base_url is None:
@@ -106,23 +102,23 @@ def build(flavor_id, opener=None):
             raise InfrastructureError("La clé API de %s n'est pas configurée." % name)
         return ArrClient(flavor, base_url, api_key, opener)
 
-    def resolve_item(ctx, api):
+    def resolve_item(ctx: Context, api: ArrClient) -> Tuple[Optional[int], Optional[str]]:
         explicit = ctx.number(flavor["item_key"])
         if explicit is not None:
             return int(explicit), None
         path, error = remote_path(ctx)
-        if error:
+        if path is None:
             return None, error
         match = best_match(api.items(), path)
         if match is None:
             return None, "Aucun élément %s ne contient ce fichier." % name
         return match[0], None
 
-    def command_component(command, done):
-        def handler(ctx):
+    def command_component(command: str, done: str) -> Handler:
+        def handler(ctx: Context) -> Outcome:
             api = client(ctx)
             item_id, error = resolve_item(ctx, api)
-            if error:
+            if item_id is None:
                 return Outcome.output("error", error)
             api.command(command, item_id)
             return Outcome.output("success", "%s %s (identifiant %d)." % (done, name, item_id))
@@ -132,27 +128,27 @@ def build(flavor_id, opener=None):
     plugin.component(flavor["search"])(command_component(flavor["search_command"], "La recherche a été demandée à"))
 
     @plugin.component(flavor["check"])
-    def check(ctx):
+    def check(ctx: Context) -> Outcome:
         api = client(ctx)
         explicit = ctx.number(flavor["check_id_key"])
         if explicit is not None:
             status, _ = api.get(flavor["check_id_path"] % int(explicit))
             return Outcome.output("notFound", "Élément absent du service.") if status == 404 else Outcome.output("found", "Élément connu du service.")
         path, error = remote_path(ctx)
-        if error:
+        if path is None:
             return Outcome.output("error", error)
         items = api.items()
         if flavor_id == "radarr":
-            known = any(item[2] is not None and _norm(item[2]) == _norm(path) for item in items)
+            known = any(item[2] is not None and same_path(item[2], path) for item in items)
         else:
             series = best_match(items, path)
-            known = series is not None and any(_norm(p) == _norm(path) for p in api.episode_file_paths(series[0]))
+            known = series is not None and any(same_path(p, path) for p in api.episode_file_paths(series[0]))
         return Outcome.output("found", "Fichier connu de %s." % name) if known else Outcome.output("notFound", "Fichier absent de %s." % name)
 
     return plugin
 
 
-def main(argv):
+def main(argv: List[str]) -> int:
     if len(argv) != 2 or argv[1] not in FLAVORS:
         sys.stderr.write("Argument attendu : sonarr ou radarr.\n")
         return 2
