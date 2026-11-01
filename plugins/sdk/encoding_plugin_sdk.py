@@ -118,13 +118,12 @@ def load_manifest(script_path, plugin_id):
     """Charge le manifeste du plugin.
 
     Le serveur et le plugin utilisent le même JSON : il est cherché dans manifests/<id>.json à côté du script
-    (image worker), puis dans le catalogue du dépôt (développement).
+    (paquet installé), puis à côté du script (développement).
     """
     here = os.path.dirname(os.path.abspath(script_path))
     candidates = [
         os.path.join(here, "manifests", plugin_id + ".json"),
         os.path.join(here, plugin_id + ".json"),
-        os.path.join(here, "..", "..", "src", "Encoding.Api", "Flows", "Catalog", plugin_id + ".json"),
     ]
     for path in candidates:
         if os.path.isfile(path):
@@ -303,6 +302,29 @@ def remote_path(ctx):
     if path is None:
         return None, "Cette bibliothèque n'a pas de correspondance de chemin dans la configuration du plugin."
     return path, None
+
+
+def norm_path(path):
+    """Chemin avec des séparateurs « / », pour comparer des chemins Windows et POSIX."""
+    return path.replace("\\", "/")
+
+
+def same_path(left, right):
+    return norm_path(left) == norm_path(right)
+
+
+def longest_prefix_match(candidates, path):
+    """Valeur de la paire (dossier, valeur) dont le dossier est le plus long préfixe du fichier, sinon None.
+
+    La frontière de dossier est respectée (/a/b ne contient pas /a/bc/f). En cas d'égalité, le premier gagne.
+    """
+    target = norm_path(path)
+    best = None
+    for folder, value in candidates:
+        prefix = norm_path(folder).rstrip("/") + "/"
+        if target.startswith(prefix) and (best is None or len(prefix) > best[0]):
+            best = (len(prefix), value)
+    return None if best is None else best[1]
 
 
 # --- client HTTP JSON ---------------------------------------------------------------------------------------------

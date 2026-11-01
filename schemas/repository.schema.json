@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/remi-deher/encoding-store/blob/main/schemas/repository.schema.json",
+  "title": "Encoding Store repository index",
+  "type": "object",
+  "required": ["schemaVersion", "name", "description", "categories", "plugins", "tools"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": { "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }, "name": { "type": "string", "minLength": 1 } },
+        "additionalProperties": false
+      }
+    },
+    "plugins": { "type": "array", "items": { "$ref": "#/$defs/package" } },
+    "tools": { "type": "array", "items": { "$ref": "#/$defs/package" } }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "package": {
+      "type": "object",
+      "required": ["id", "name", "summary", "latestVersion", "versions"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$" },
+        "name": { "type": "string", "minLength": 1 },
+        "summary": { "type": "string", "minLength": 1 },
+        "category": { "type": "string" },
+        "requiredTools": { "type": "array", "items": { "type": "string" } },
+        "latestVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "versions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["version", "downloadUrl", "sha256"],
+            "properties": {
+              "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+              "platform": { "type": "string" },
+              "downloadUrl": { "type": "string", "pattern": "^https://" },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

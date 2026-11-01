@@ -16,7 +16,7 @@ for candidate in (HERE, os.path.join(HERE, "..", "sdk")):
     if os.path.isdir(candidate) and candidate not in sys.path:
         sys.path.insert(0, candidate)
 
-from encoding_plugin_sdk import InfrastructureError, JsonApi, Outcome, Plugin, load_manifest, remote_path  # noqa: E402,F401
+from encoding_plugin_sdk import InfrastructureError, JsonApi, Outcome, Plugin, load_manifest, longest_prefix_match, remote_path, same_path  # noqa: E402
 
 FLAVORS = {
     "sonarr": {
@@ -79,15 +79,9 @@ class ArrClient:
         return [f["path"] for f in payload or [] if isinstance(f, dict) and isinstance(f.get("path"), str)]
 
 
-def _norm(path):
-    return path.replace("\\", "/")
-
-
-def best_match(items, remote_path):
+def best_match(items, path):
     """L'élément dont le dossier est le plus long préfixe du fichier (frontière de dossier respectée)."""
-    target = _norm(remote_path)
-    matches = [item for item in items if target.startswith(_norm(item[1]).rstrip("/") + "/")]
-    return max(matches, key=lambda item: len(item[1]), default=None)
+    return longest_prefix_match(((item[1], item) for item in items), path)
 
 
 # --- composants --------------------------------------------------------------------------------------------------
@@ -143,10 +137,10 @@ def build(flavor_id, opener=None):
             return Outcome.output("error", error)
         items = api.items()
         if flavor_id == "radarr":
-            known = any(item[2] is not None and _norm(item[2]) == _norm(path) for item in items)
+            known = any(item[2] is not None and same_path(item[2], path) for item in items)
         else:
             series = best_match(items, path)
-            known = series is not None and any(_norm(p) == _norm(path) for p in api.episode_file_paths(series[0]))
+            known = series is not None and any(same_path(p, path) for p in api.episode_file_paths(series[0]))
         return Outcome.output("found", "Fichier connu de %s." % name) if known else Outcome.output("notFound", "Fichier absent de %s." % name)
 
     return plugin

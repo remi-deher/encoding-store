@@ -1,0 +1,8 @@
+[tool.ruff]
+target-version = "py39"
+line-length = 140
+extend-exclude = ["packages"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "UP006"]
+ignore = ["E501", "E402", "B904"]

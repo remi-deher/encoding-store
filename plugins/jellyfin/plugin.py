@@ -13,13 +13,9 @@ for candidate in (HERE, os.path.join(HERE, "..", "sdk")):
     if os.path.isdir(candidate) and candidate not in sys.path:
         sys.path.insert(0, candidate)
 
-from encoding_plugin_sdk import InfrastructureError, JsonApi, Outcome, Plugin, load_manifest, remote_path  # noqa: E402
+from encoding_plugin_sdk import InfrastructureError, JsonApi, Outcome, Plugin, load_manifest, remote_path, same_path  # noqa: E402
 
 REFRESH_QUERY = "Recursive=false&MetadataRefreshMode=FullRefresh&ImageRefreshMode=FullRefresh&ReplaceAllMetadata=false"
-
-
-def _norm(path):
-    return path.replace("\\", "/")
 
 
 class JellyfinClient:
@@ -33,7 +29,7 @@ class JellyfinClient:
     def item_id_for_path(self, path):
         """Identifiant de l'élément dont le fichier est exactement ce chemin (le filtre serveur est revérifié)."""
         for item in self.items({"Recursive": "true", "Path": path, "Fields": "Path", "IncludeItemTypes": "Movie,Episode,Video,Audio"}):
-            if isinstance(item.get("Path"), str) and _norm(item["Path"]) == _norm(path):
+            if isinstance(item.get("Path"), str) and same_path(item["Path"], path):
                 return item["Id"]
         return None
 
@@ -119,7 +115,7 @@ def build(opener=None):
         path, error = remote_path(ctx)
         if error:
             return Outcome.output("error", error)
-        if any(f is not None and _norm(f) == _norm(path) for f in files):
+        if any(f is not None and same_path(f, path) for f in files):
             return Outcome.output("playing", "Le fichier est en cours de lecture dans Jellyfin.")
         return Outcome.output("idle", "Le fichier n'est pas en cours de lecture dans Jellyfin.")
 

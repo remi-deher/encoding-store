@@ -17,17 +17,13 @@ for candidate in (HERE, os.path.join(HERE, "..", "sdk")):
     if os.path.isdir(candidate) and candidate not in sys.path:
         sys.path.insert(0, candidate)
 
-from encoding_plugin_sdk import InfrastructureError, JsonApi, Outcome, Plugin, load_manifest, remote_path  # noqa: E402
+from encoding_plugin_sdk import InfrastructureError, JsonApi, Outcome, Plugin, load_manifest, longest_prefix_match, remote_path, same_path  # noqa: E402
 
 POLL_SECONDS = 2
 DEFAULT_WAIT_SECONDS = 120
 MAX_WAIT_SECONDS = 600
 SAFETY_MARGIN_SECONDS = 5
 ITEM_TYPES = {"movie": 1, "show": 4}  # l'épisode est l'élément qui porte un fichier
-
-
-def _norm(path):
-    return path.replace("\\", "/")
 
 
 class PlexClient:
@@ -77,7 +73,7 @@ class PlexClient:
         for item in ((payload or {}).get("MediaContainer") or {}).get("Metadata") or []:
             for media in item.get("Media") or []:
                 for part in media.get("Part") or []:
-                    if isinstance(part.get("file"), str) and _norm(part["file"]) == _norm(path):
+                    if isinstance(part.get("file"), str) and same_path(part["file"], path):
                         return item
         return None
 
@@ -105,7 +101,7 @@ def blocks_playback(sessions, path, episode=None, include_next=False, margin_min
     quand il reste au plus margin_minutes de lecture (une durée restante inconnue compte).
     """
     for session in sessions:
-        if any(_norm(f) == _norm(path) for f in session["files"]):
+        if any(same_path(f, path) for f in session["files"]):
             return True
         if include_next and episode is not None and session["episode"] is not None:
             series, season, number = session["episode"]
@@ -118,14 +114,7 @@ def blocks_playback(sessions, path, episode=None, include_next=False, margin_min
 
 def section_for(sections, path):
     """Section dont un dossier est le plus long préfixe du fichier (frontière de dossier respectée)."""
-    target = _norm(path)
-    best = None
-    for section in sections:
-        for location in section[2]:
-            prefix = _norm(location).rstrip("/") + "/"
-            if target.startswith(prefix) and (best is None or len(prefix) > best[0]):
-                best = (len(prefix), section)
-    return None if best is None else best[1]
+    return longest_prefix_match(((location, section) for section in sections for location in section[2]), path)
 
 
 def wait_seconds(ctx, now=None):
@@ -227,7 +216,7 @@ def build(opener=None, sleep=time.sleep, clock=time.monotonic):
         margin = ctx.number("nextEpisodeMarginMinutes") or 0
         if not blocks_playback(sessions, path, episode, include_next, margin):
             return Outcome.output("idle", "Le fichier n'est pas en cours de lecture dans Plex.")
-        if any(_norm(f) == _norm(path) for session in sessions for f in session["files"]):
+        if any(same_path(f, path) for session in sessions for f in session["files"]):
             return Outcome.output("playing", "Le fichier est en cours de lecture dans Plex.")
         return Outcome.output("playing", "L'épisode précédent est en cours de lecture : la lecture enchaînera sur ce fichier.")
 
