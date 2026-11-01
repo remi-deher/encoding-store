@@ -22,6 +22,7 @@ Run the checks (the same as CI; requires `pip install fastjsonschema ruff mypy`)
 ```sh
 ruff check .
 mypy
+npm ci && npm run typecheck
 python3 scripts/store.py verify
 python3 -m unittest discover -s scripts/tests -v
 python3 -m unittest discover -s plugins/tests -v

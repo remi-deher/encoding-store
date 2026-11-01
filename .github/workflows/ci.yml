@@ -24,8 +24,10 @@ jobs:
       - run: pip install fastjsonschema ruff mypy
       - name: Lint
         run: ruff check .
-      - name: Type check
+      - name: Type check (Python)
         run: mypy
+      - name: Type check (JavaScript SDK)
+        run: npm ci && npm run typecheck
       - name: Catalogue integrity (hashes, schemas, archives vs sources)
         run: python3 scripts/store.py verify
       - name: Published packages are immutable

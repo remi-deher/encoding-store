@@ -11,6 +11,7 @@ pip install fastjsonschema ruff mypy
 ```sh
 ruff check .
 mypy                                          # SDK, plugins Python et scripts/store.py
+npm ci && npm run typecheck                   # SDK JavaScript (JSDoc + tsc strict) et plugin d'exemple
 python3 scripts/store.py verify              # hashes, schémas, archives contre sources, orphelins
 python3 -m unittest discover -s scripts/tests -v
 python3 -m unittest discover -s plugins/tests -v

@@ -20,6 +20,20 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
 
+/** @typedef {Record<string, any>} JsonObject */
+/** @typedef {{ id: string, type?: string, label?: string, scope?: string | null }} FieldDefinition */
+/** @typedef {{ id: string, label?: string, description?: string }} OutputDefinition */
+/** @typedef {{ id: string, version: string, kind?: string, description?: string, category?: string | null, mediaEffect?: string | null,
+ *   timeoutSeconds?: number | null, outputs: OutputDefinition[], configurationSchema: { version: number, fields?: FieldDefinition[] } }} ComponentDefinition */
+/** @typedef {{ contractVersion: number, id: string, version: string, name: string, supportedHostContractVersions?: number[],
+ *   configurationSchema?: { version: number, fields?: FieldDefinition[] }, components: ComponentDefinition[] }} Manifest */
+/** @typedef {{ contractVersion?: number, invocationId?: string, leaseEpoch?: number, deadline?: string,
+ *   component?: { pluginId?: string, pluginVersion?: string, componentId?: string, componentVersion?: string, configurationSchemaVersion?: number },
+ *   configuration?: JsonObject, pluginConfiguration?: JsonObject,
+ *   context?: { mediaPath?: string | null, libraryId?: string | null, variables?: JsonObject, currentArtifactId?: string | null, beforeMetadata?: JsonObject | null, currentMetadata?: JsonObject | null } }} Invocation */
+/** @typedef {(context: Context) => Outcome | Promise<Outcome>} Handler */
+/** @typedef {{ config?: JsonObject, pluginConfig?: JsonObject, mediaPath?: string | null, libraryId?: string | null, variables?: JsonObject }} SimulationOptions */
+
 export const CONTRACT_VERSION = 1;
 const MAX_REQUEST_CHARACTERS = 1024 * 1024;
 const TERMINAL_RESULTS = ["unchanged", "success", "failed", "deferred"];
@@ -28,20 +42,36 @@ export class InfrastructureError extends Error {}
 export class ContractError extends Error {}
 
 export class Outcome {
+  /**
+   * @param {string | null} [outputId]
+   * @param {string | null} [terminal]
+   * @param {string} [detail]
+   * @param {JsonObject} [variables]
+   * @param {string | null} [candidate]
+   */
   constructor(outputId = null, terminal = null, detail = "", variables = {}, candidate = null) {
-    Object.assign(this, { outputId, terminal, detail, variables, candidate });
+    /** @type {string | null} */ this.outputId = outputId;
+    /** @type {string | null} */ this.terminal = terminal;
+    /** @type {string} */ this.detail = detail;
+    /** @type {JsonObject} */ this.variables = variables;
+    /** @type {string | null} */ this.candidate = candidate;
   }
+  /** @param {string} outputId @param {string} [detail] @param {JsonObject} [variables] @param {string | null} [candidate] */
   static output(outputId, detail = "", variables = {}, candidate = null) { return new Outcome(outputId, null, detail, variables, candidate); }
+  /** @param {string} terminal @param {string} [detail] */
   static finish(terminal, detail = "") {
     if (!TERMINAL_RESULTS.includes(terminal)) throw new RangeError(`Résultat terminal inconnu : ${terminal}`);
     return new Outcome(null, terminal, detail);
   }
 }
 
+/** @param {JsonObject} values @param {string} key @returns {string | null} */
 const text = (values, key) => (typeof values[key] === "string" && values[key].trim() ? values[key] : null);
+/** @param {JsonObject} values @param {string} key @returns {number | null} */
 const number = (values, key) => (typeof values[key] === "number" ? values[key] : null);
 
 export class Context {
+  /** @param {Invocation} invocation */
   constructor(invocation) {
     this.invocation = invocation;
     this.config = invocation.configuration ?? {};
@@ -54,26 +84,35 @@ export class Context {
     this.beforeMetadata = context.beforeMetadata ?? null;
     this.currentMetadata = context.currentMetadata ?? null;
   }
+  /** @param {string} key */
   text(key) { return text(this.config, key); }
+  /** @param {string} key */
   number(key) { return number(this.config, key); }
+  /** @param {string} key @param {boolean} [fallback] */
   flag(key, fallback = false) { return typeof this.config[key] === "boolean" ? this.config[key] : fallback; }
+  /** @param {string} key */
   pluginText(key) { return text(this.pluginConfig, key); }
+  /** @param {string} key */
   pluginNumber(key) { return number(this.pluginConfig, key); }
 }
 
-/** Charge manifest.json à côté du script (import.meta.url). */
+/** Charge manifest.json à côté du script (import.meta.url).
+ * @param {string} scriptUrl @param {string} [fileName] @returns {Manifest} */
 export function loadManifest(scriptUrl, fileName = "manifest.json") {
   return JSON.parse(readFileSync(join(dirname(fileURLToPath(scriptUrl)), fileName), "utf8"));
 }
 
 export class Plugin {
+  /** @param {Manifest} manifest */
   constructor(manifest) {
     if (manifest.contractVersion !== CONTRACT_VERSION || !(manifest.supportedHostContractVersions ?? []).includes(CONTRACT_VERSION))
       throw new ContractError(`Le manifeste doit déclarer le contrat hôte ${CONTRACT_VERSION}.`);
     this.manifest = manifest;
+    /** @type {Map<string, Handler>} */
     this.handlers = new Map();
   }
 
+  /** @param {string} componentId @param {Handler} handler */
   component(componentId, handler) {
     if (!this.manifest.components.some((c) => c.id === componentId)) throw new ContractError(`Composant absent du manifeste : ${componentId}.`);
     if (this.handlers.has(componentId)) throw new ContractError(`Composant déjà géré : ${componentId}.`);
@@ -81,6 +120,7 @@ export class Plugin {
     return this;
   }
 
+  /** @param {Invocation} invocation @returns {Promise<JsonObject>} */
   async #execute(invocation) {
     if (!invocation || typeof invocation !== "object") throw new ContractError("Invocation absente.");
     const reference = invocation.component ?? {};
@@ -89,7 +129,9 @@ export class Plugin {
     const component = this.manifest.components.find((c) => c.id === reference.componentId && c.version === reference.componentVersion
       && c.configurationSchema.version === reference.configurationSchemaVersion);
     if (!component) throw new ContractError("Composant inconnu de ce plugin.");
-    const outcome = await this.handlers.get(component.id)(new Context(invocation));
+    const handler = this.handlers.get(component.id);
+    if (!handler) throw new ContractError("Composant sans gestionnaire.");
+    const outcome = await handler(new Context(invocation));
     if (!(outcome instanceof Outcome) || (outcome.outputId === null) === (outcome.terminal === null))
       throw new ContractError("Un composant doit retourner exactement une sortie ou un résultat terminal.");
     if (outcome.outputId !== null && !component.outputs.some((o) => o.id === outcome.outputId))
@@ -101,7 +143,8 @@ export class Plugin {
     };
   }
 
-  /** Exécute un composant sans processus ni cluster, avec une invocation fabriquée. */
+  /** Exécute un composant sans processus ni cluster, avec une invocation fabriquée.
+   * @param {string} componentId @param {SimulationOptions} [options] */
   simulate(componentId, { config = {}, pluginConfig = {}, mediaPath = null, libraryId = null, variables = {} } = {}) {
     const component = this.manifest.components.find((c) => c.id === componentId);
     if (!component) throw new ContractError(`Composant absent du manifeste : ${componentId}.`);
@@ -114,6 +157,7 @@ export class Plugin {
     });
   }
 
+  /** @param {AsyncIterable<string | Buffer>} stdin @returns {Promise<JsonObject>} */
   async #readRequest(stdin) {
     let data = "";
     for await (const chunk of stdin) {
@@ -126,7 +170,9 @@ export class Plugin {
     return JSON.parse(data);
   }
 
-  /** Traite une requête du worker. Retourne 0 si une réponse valide a été écrite, 1 sinon. */
+  /** Traite une requête du worker. Retourne 0 si une réponse valide a été écrite, 1 sinon.
+   * @param {NodeJS.ReadableStream} [stdin] @param {{ write(chunk: string): unknown }} [stdout] @param {{ write(chunk: string): unknown }} [stderr]
+   * @returns {Promise<number>} */
   async run(stdin = process.stdin, stdout = process.stdout, stderr = process.stderr) {
     try {
       const missing = this.manifest.components.filter((c) => !this.handlers.has(c.id)).map((c) => c.id);
@@ -147,22 +193,24 @@ export class Plugin {
     }
   }
 
-  /** Point d'entrée : protocole sur stdin/stdout, ou --simulate pour le développement local. */
+  /** Point d'entrée : protocole sur stdin/stdout, ou --simulate pour le développement local.
+   * @param {string[]} [argv] @returns {Promise<number>} */
   async main(argv = process.argv.slice(2)) {
     if (argv[0] !== "--simulate") return this.run();
     try {
       const [, componentId, ...rest] = argv;
-      const options = { config: rest[0] && !rest[0].startsWith("--") ? JSON.parse(rest.shift()) : {} };
+      /** @type {SimulationOptions} */
+      const options = { config: rest[0] && !rest[0].startsWith("--") ? JSON.parse(String(rest.shift())) : {} };
       for (let i = 0; i < rest.length; i += 2) {
-        if (rest[i] === "--plugin-config") options.pluginConfig = JSON.parse(rest[i + 1]);
-        else if (rest[i] === "--media") options.mediaPath = rest[i + 1];
-        else if (rest[i] === "--library") options.libraryId = rest[i + 1];
+        if (rest[i] === "--plugin-config") options.pluginConfig = JSON.parse(String(rest[i + 1]));
+        else if (rest[i] === "--media") options.mediaPath = rest[i + 1] ?? null;
+        else if (rest[i] === "--library") options.libraryId = rest[i + 1] ?? null;
         else throw new ContractError(`Option inconnue : ${rest[i]}`);
       }
-      console.log(JSON.stringify(await this.simulate(componentId, options), null, 2));
+      console.log(JSON.stringify(await this.simulate(String(componentId), options), null, 2));
       return 0;
     } catch (error) {
-      process.stderr.write(`simulate : ${error.message}\n`);
+      process.stderr.write(`simulate : ${error instanceof Error ? error.message : String(error)}\n`);
       return 1;
     }
   }
@@ -181,7 +229,10 @@ const FLOW_COMPONENT_CATEGORIES = new Set([
   "media-servers", "communications", "cluster", "orchestration", "reporting", "utilities",
 ]);
 
+/** Retourne la liste des problèmes d'un manifeste (vide si le serveur l'acceptera).
+ * @param {any} manifest @returns {string[]} */
 export function validateManifest(manifest) {
+  /** @type {string[]} */
   const problems = [];
   if (!manifest || typeof manifest !== "object") return ["Le manifeste doit être un objet JSON."];
   if (typeof manifest.id !== "string" || manifest.id.length > 64 || !PLUGIN_ID.test(manifest.id)) problems.push("id : minuscules, chiffres et tirets, avec un espace de noms optionnel « espace.nom ».");
@@ -189,13 +240,14 @@ export function validateManifest(manifest) {
   if (manifest.contractVersion !== CONTRACT_VERSION) problems.push(`contractVersion : ${CONTRACT_VERSION} attendu.`);
   if (!(manifest.supportedHostContractVersions ?? []).includes(CONTRACT_VERSION)) problems.push(`supportedHostContractVersions : doit contenir ${CONTRACT_VERSION}.`);
   if (typeof manifest.name !== "string" || !manifest.name.trim()) problems.push("name : requis.");
+  /** @param {string} owner @param {FieldDefinition[] | undefined} fields @param {string[]} allowed */
   const checkFields = (owner, fields, allowed) => {
     const seen = new Set();
     for (const field of fields ?? []) {
       if (!field?.id) { problems.push(`${owner} : un champ n'a pas d'id.`); continue; }
       if (seen.has(field.id)) problems.push(`${owner} : champ « ${field.id} » dupliqué.`);
       seen.add(field.id);
-      if (!allowed.includes(field.type)) problems.push(`${owner} : champ « ${field.id} » de type « ${field.type} » non pris en charge (${allowed.join(", ")}).`);
+      if (!allowed.includes(field.type ?? "")) problems.push(`${owner} : champ « ${field.id} » de type « ${field.type} » non pris en charge (${allowed.join(", ")}).`);
       if (!field.label) problems.push(`${owner} : champ « ${field.id} » sans label.`);
       if (field.scope != null && !["server", "worker"].includes(field.scope)) problems.push(`${owner} : champ « ${field.id} » : scope « server » ou « worker ».`);
     }
@@ -215,6 +267,7 @@ export function validateManifest(manifest) {
     if (!["action", "condition"].includes(component.kind)) problems.push(`Composant « ${id} » : kind « action » ou « condition ».`);
     if (!String(component.description ?? "").trim()) problems.push(`Composant « ${id} » : description vide (l'éditeur et les assistants IA s'y fient).`);
     if (component.category != null && !FLOW_COMPONENT_CATEGORIES.has(component.category)) problems.push(`Composant « ${id} » : catégorie fonctionnelle inconnue.`);
+    /** @type {OutputDefinition[]} */
     const outputs = component.outputs ?? [];
     if (!outputs.length) problems.push(`Composant « ${id} » : aucune sortie déclarée.`);
     if (new Set(outputs.map((o) => o.id)).size !== outputs.length) problems.push(`Composant « ${id} » : identifiant de sortie dupliqué.`);
@@ -230,9 +283,10 @@ export function validateManifest(manifest) {
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   if (process.argv[2] === "validate" && process.argv[3]) {
+    /** @type {string[]} */
     let problems;
     try { problems = validateManifest(JSON.parse(readFileSync(process.argv[3], "utf8"))); }
-    catch (error) { console.error(`Manifeste illisible : ${error.message}`); process.exit(1); }
+    catch (error) { console.error(`Manifeste illisible : ${error instanceof Error ? error.message : String(error)}`); process.exit(1); }
     for (const problem of problems) console.log(`✗ ${problem}`);
     console.log(problems.length ? `${problems.length} problème(s).` : "Manifeste valide.");
     process.exit(problems.length ? 1 : 0);
