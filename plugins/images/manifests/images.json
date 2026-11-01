@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "images",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "name": "Traitement d'images",
   "supportedHostContractVersions": [
     1

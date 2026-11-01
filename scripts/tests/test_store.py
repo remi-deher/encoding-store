@@ -5,6 +5,7 @@ Exécution : python3 -m unittest discover -s scripts/tests -v   (depuis la racin
 import argparse
 import contextlib
 import io
+import json
 import os
 import shutil
 import sys
@@ -39,18 +40,18 @@ def verify():
 
 
 class StoreTests(unittest.TestCase):
-    def test_repository_is_valid(self):
+    def test_repository_is_valid(self) -> None:
         code, output = verify()
         self.assertEqual(0, code, output)
 
-    def test_archives_are_reproducible(self):
+    def test_archives_are_reproducible(self) -> None:
         spec = store.read_json(store.SPEC_PATH)
         _, entries = store.expected_entries(spec, "plex")
         first = store.build_zip(entries)
         self.assertEqual(first, store.build_zip(dict(reversed(list(entries.items())))))
         self.assertEqual("plugin.json", zipfile.ZipFile(io.BytesIO(first)).namelist()[0])
 
-    def test_tampered_archive_is_detected(self):
+    def test_tampered_archive_is_detected(self) -> None:
         with repository_copy() as directory:
             path = os.path.join(directory, "packages", "plex", "1.1.1", "1.1.1.zip")
             with open(path, "ab") as handle:
@@ -59,7 +60,7 @@ class StoreTests(unittest.TestCase):
             self.assertEqual(1, code)
             self.assertIn("plex 1.1.1", output)
 
-    def test_source_change_without_new_version_is_detected(self):
+    def test_source_change_without_new_version_is_detected(self) -> None:
         with repository_copy() as directory:
             with open(os.path.join(directory, "plugins", "plex", "plugin.py"), "a", encoding="utf-8") as handle:
                 handle.write("\n# modifié\n")
@@ -67,7 +68,7 @@ class StoreTests(unittest.TestCase):
             self.assertEqual(1, code)
             self.assertIn("plugin.py diffère des sources", output)
 
-    def test_orphan_archive_is_detected(self):
+    def test_orphan_archive_is_detected(self) -> None:
         with repository_copy() as directory:
             os.makedirs(os.path.join(directory, "packages", "plex", "9.9.9"))
             with open(os.path.join(directory, "packages", "plex", "9.9.9", "9.9.9.zip"), "wb") as handle:
@@ -76,13 +77,22 @@ class StoreTests(unittest.TestCase):
             self.assertEqual(1, code)
             self.assertIn("absente de repository.json", output)
 
-    def test_published_version_cannot_be_rebuilt(self):
+    def test_show_prints_indented_manifest_of_a_published_archive(self) -> None:
+        for package, version in (("ffmpeg", None), ("plex", "1.1.0"), ("base", None)):
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                store.command_show(argparse.Namespace(id=package, version=version))
+            text = output.getvalue()
+            self.assertGreater(text.count("\n"), 5, package)
+            self.assertEqual(package, json.loads(text)["id"])
+
+    def test_published_version_cannot_be_rebuilt(self) -> None:
         with repository_copy():
             with self.assertRaises(SystemExit) as raised:
                 store.command_build(argparse.Namespace(id="plex", ref="main"))
             self.assertIn("immuable", str(raised.exception))
 
-    def test_build_publishes_a_new_version(self):
+    def test_build_publishes_a_new_version(self) -> None:
         with repository_copy() as directory:
             manifest_path = os.path.join(directory, "plugins", "plex", "manifests", "plex.json")
             with open(manifest_path, encoding="utf-8") as handle:

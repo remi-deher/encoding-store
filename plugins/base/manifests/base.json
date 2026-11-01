@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "base",
-  "version": "1.10.1",
+  "version": "1.10.2",
   "name": "Base",
   "supportedHostContractVersions": [
     1

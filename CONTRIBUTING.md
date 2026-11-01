@@ -32,6 +32,8 @@ python3 -m unittest discover -s plugins/tests -v
 4. `python3 scripts/store.py verify`, puis ajouter une entrée à `CHANGELOG.md`.
 5. Changer le résumé, la catégorie ou le nom : éditer `plugins/packages.json` puis `python3 scripts/store.py sync-index`.
 
+`python3 scripts/store.py show <id> [version]` affiche le `plugin.json` / `tool.json` d'une archive publiée, indenté.
+
 `build --ref <tag>` fait pointer `downloadUrl` vers un tag ou un commit plutôt que `main`.
 
 ## Publier un instantané du catalogue

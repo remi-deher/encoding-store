@@ -3,6 +3,7 @@
 
     python3 scripts/store.py verify [--base REF]     contrôle complet (CI) ; --base REF refuse toute modification d'un paquet déjà publié
     python3 scripts/store.py build <id> [--ref REF]  construit packages/<id>/<version>/<version>.zip depuis plugins/ et l'ajoute à repository.json
+    python3 scripts/store.py show <id> [version]     affiche le manifeste interne (plugin.json ou tool.json) d'une archive publiée, indenté
     python3 scripts/store.py sync-index              recopie nom, résumé, catégorie et outils requis de plugins/packages.json vers repository.json
 
 Dépendance : fastjsonschema (pip install fastjsonschema), pour valider les manifestes contre schemas/.
@@ -155,6 +156,21 @@ def command_build(args: argparse.Namespace) -> int:
     with open(INDEX_PATH, "w", encoding="utf-8") as handle:
         handle.write(dump_json(index))
     print("%s %s construit (%s)." % (args.id, version, sha256(data)))
+    return 0
+
+
+def command_show(args: argparse.Namespace) -> int:
+    index = read_json(INDEX_PATH)
+    item = next((entry for kind in ("plugins", "tools") for entry in index[kind] if entry["id"] == args.id), None)
+    if item is None:
+        sys.exit("Paquet inconnu : %s" % args.id)
+    version = args.version or item["latestVersion"]
+    path = archive_path(args.id, version)
+    if not os.path.isfile(path):
+        sys.exit("Archive absente : %s %s" % (args.id, version))
+    with zipfile.ZipFile(path) as archive:
+        name = "plugin.json" if "plugin.json" in archive.namelist() else "tool.json"
+        sys.stdout.write(dump_json(json.loads(archive.read(name))))
     return 0
 
 
@@ -324,6 +340,10 @@ def main(argv: list[str]) -> int:
     build.add_argument("id")
     build.add_argument("--ref", default="main", help="branche, tag ou commit servi dans downloadUrl (défaut : main)")
     build.set_defaults(handler=command_build)
+    show = commands.add_parser("show")
+    show.add_argument("id")
+    show.add_argument("version", nargs="?", help="défaut : la dernière version")
+    show.set_defaults(handler=command_show)
     commands.add_parser("sync-index").set_defaults(handler=command_sync_index)
     args = parser.parse_args(argv)
     return args.handler(args)
