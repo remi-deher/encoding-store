@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "base",
-  "version": "1.10.2",
+  "version": "1.10.3",
   "name": "Base",
   "supportedHostContractVersions": [
     1
@@ -45,7 +45,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "inputs"
     },
@@ -84,7 +86,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "inputs"
     },
@@ -123,7 +127,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "inputs"
     },
@@ -162,7 +168,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "inputs"
     },
@@ -201,7 +209,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "inputs"
     },
@@ -309,7 +319,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "scripts"
     },
@@ -384,7 +396,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "orchestration"
     },
@@ -443,7 +457,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "orchestration"
     },
@@ -498,7 +514,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "orchestration"
     },
@@ -564,7 +582,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "orchestration"
     },
@@ -628,7 +648,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "variables"
     },
@@ -888,7 +910,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "orchestration"
     },
@@ -946,7 +970,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "files"
     },
@@ -999,7 +1025,9 @@
         "1.7.0",
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "files"
     },
@@ -1043,7 +1071,9 @@
       "compatiblePluginVersions": [
         "1.8.0",
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "files"
     },
@@ -1088,7 +1118,9 @@
       "requiresWriteAccess": false,
       "compatiblePluginVersions": [
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "mediaEffect": "readOnly",
       "category": "encoding"
@@ -1141,7 +1173,9 @@
       "requiresWriteAccess": true,
       "compatiblePluginVersions": [
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "encoding"
     },
@@ -1205,7 +1239,7 @@
             "id": "styleProfile",
             "label": "Profil de style",
             "type": "select",
-            "defaultValue": "crunchyroll",
+            "defaultValue": "none",
             "options": [
               {
                 "value": "crunchyroll",
@@ -1220,11 +1254,27 @@
                 "label": "Style personnalisé (instantané du flow)"
               }
             ],
-            "description": "Le profil intégré est un réglage initial en lecture seule. Les polices qu’il utilise (Trebuchet MS Gras, Arial Gras) s’ajoutent avec le bloc « Polices ».",
+            "description": "Conservé pour les flows déjà publiés. Le moteur n’applique plus ce choix : citez une ressource de profil.",
             "importance": "advanced",
             "section": "Sous-titres",
             "requiresPluginVersion": "1.2.0",
             "requiresPluginVersionValue": "custom",
+            "visibleWhenFieldId": "manageSubtitles",
+            "visibleWhenValue": "true",
+            "legacyOnly": true
+          },
+          {
+            "id": "profile",
+            "label": "Profil de sous-titres",
+            "type": "text",
+            "required": false,
+            "defaultValue": "",
+            "description": "Ressource du catalogue (identifiant:version). Vide : ne pas restyler. Les mesures du document sont celles du canevas de référence et sont mises à l’échelle du cadre affiché.",
+            "importance": "advanced",
+            "section": "Sous-titres",
+            "editor": "resource",
+            "resourceKind": "subtitle-profile",
+            "requiresPluginVersion": "1.10.3",
             "visibleWhenFieldId": "manageSubtitles",
             "visibleWhenValue": "true"
           },
@@ -1244,7 +1294,7 @@
             "label": "Mettre à niveau les ASS simples",
             "type": "boolean",
             "defaultValue": true,
-            "description": "Remplace l’en-tête et les quatre styles communs ; les événements sont conservés.",
+            "description": "Remplace l’en-tête et les styles du profil cité ; les événements sont conservés.",
             "importance": "advanced",
             "section": "Sous-titres",
             "visibleWhenFieldId": "manageSubtitles",
@@ -1302,7 +1352,8 @@
             "section": "Sous-titres",
             "defaultValue": "Trebuchet MS",
             "visibleWhenFieldId": "manageSubtitles",
-            "visibleWhenValue": "true"
+            "visibleWhenValue": "true",
+            "legacyOnly": true
           },
           {
             "id": "fontSize",
@@ -1314,7 +1365,8 @@
             "max": 80,
             "defaultValue": 23,
             "visibleWhenFieldId": "manageSubtitles",
-            "visibleWhenValue": "true"
+            "visibleWhenValue": "true",
+            "legacyOnly": true
           },
           {
             "id": "fontOutline",
@@ -1326,7 +1378,8 @@
             "max": 10,
             "defaultValue": 2.5,
             "visibleWhenFieldId": "manageSubtitles",
-            "visibleWhenValue": "true"
+            "visibleWhenValue": "true",
+            "legacyOnly": true
           },
           {
             "id": "fontMargin",
@@ -1338,7 +1391,8 @@
             "max": 100,
             "defaultValue": 20,
             "visibleWhenFieldId": "manageSubtitles",
-            "visibleWhenValue": "true"
+            "visibleWhenValue": "true",
+            "legacyOnly": true
           },
           {
             "id": "fontSet",
@@ -1442,7 +1496,9 @@
       "requiresWriteAccess": true,
       "compatiblePluginVersions": [
         "1.9.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ],
       "category": "containers"
     },
@@ -1501,7 +1557,9 @@
         "1.4.0",
         "1.5.0",
         "1.6.0",
-        "1.10.0"
+        "1.10.0",
+        "1.10.1",
+        "1.10.2"
       ]
     }
   ],

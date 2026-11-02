@@ -1,7 +1,7 @@
 {
   "contractVersion": 1,
   "id": "subtitles",
-  "version": "1.3.3",
+  "version": "1.5.0",
   "name": "Sous-titres",
   "supportedHostContractVersions": [
     1
@@ -57,189 +57,12 @@
         "1.0.0",
         "1.1.0",
         "1.2.0",
-        "1.3.1"
+        "1.3.1",
+        "1.3.2",
+        "1.3.3",
+        "1.4.0"
       ],
       "producesFiles": true,
-      "category": "text"
-    },
-    {
-      "id": "subtitles-manage",
-      "version": "1.0.0",
-      "name": "Uniformiser les sous-titres (préréglage complet)",
-      "description": "Convertit les SRT en ASS au profil de style proportionnel « Crunchyroll » (taille relative à la largeur affichée, référence 16:9), met à niveau les ASS simples, retire les doublons confirmés, déduit les pistes forcées par recouvrement de texte, nomme les pistes (« Français / ASS / Forcé ») et choisit le sous-titre français par défaut quand l’audio de référence ne l’est pas. Les pistes bitmap (PGS, VobSub) et les ASS avec styles ou placements personnalisés ne sont jamais modifiés. Les pistes non modifiées sont recopiées de la source : un seul mkvmerge écrit le nouveau fichier.",
-      "kind": "action",
-      "mediaType": "video",
-      "supportedFlowMediaTypes": [
-        "video"
-      ],
-      "outputs": [
-        {
-          "id": "success",
-          "label": "Suite",
-          "description": "Les sous-titres ont été réassemblés dans un nouveau MKV."
-        },
-        {
-          "id": "unchanged",
-          "label": "Déjà conforme",
-          "description": "Rien à changer, ou le fichier n’est pas un MKV."
-        },
-        {
-          "id": "error",
-          "label": "Erreur",
-          "description": "Une piste n’a pas pu être analysée sans risque (piste vide non confirmée, dimensions invalides, extraction impossible). Le fichier reste intact."
-        }
-      ],
-      "configurationSchema": {
-        "version": 1,
-        "fields": [
-          {
-            "id": "styleProfile",
-            "label": "Profil de style",
-            "type": "select",
-            "defaultValue": "crunchyroll",
-            "options": [
-              {
-                "value": "crunchyroll",
-                "label": "Crunchyroll (proportionnel, lecture seule)"
-              },
-              {
-                "value": "none",
-                "label": "Aucun : ne pas toucher aux styles"
-              },
-              {
-                "value": "custom",
-                "label": "Style personnalisé (instantané du flow)"
-              }
-            ],
-            "description": "Le profil intégré est un réglage initial en lecture seule. Les polices qu’il utilise (Trebuchet MS Gras, Arial Gras) s’ajoutent avec le bloc « Polices ».",
-            "importance": "basic",
-            "section": "Conversion et style",
-            "requiresPluginVersion": "1.2.0",
-            "requiresPluginVersionValue": "custom"
-          },
-          {
-            "id": "convertSrt",
-            "label": "Convertir les SRT en ASS",
-            "type": "boolean",
-            "defaultValue": true,
-            "description": "Applique le profil aux pistes SRT, WebVTT et mov_text.",
-            "importance": "basic",
-            "section": "Conversion et style"
-          },
-          {
-            "id": "upgradeAss",
-            "label": "Mettre à niveau les ASS simples",
-            "type": "boolean",
-            "defaultValue": true,
-            "description": "Remplace l’en-tête et les quatre styles communs ; les événements sont conservés.",
-            "importance": "basic",
-            "section": "Conversion et style"
-          },
-          {
-            "id": "removeDuplicates",
-            "label": "Retirer les doublons",
-            "type": "boolean",
-            "defaultValue": true,
-            "description": "Une piste dont le texte et les horaires (à 0,1 s près) sont inclus dans une autre piste de même langue et mêmes marqueurs est retirée.",
-            "importance": "basic",
-            "section": "Doublons"
-          },
-          {
-            "id": "inferForced",
-            "label": "Déduire les pistes forcées",
-            "type": "boolean",
-            "defaultValue": true,
-            "description": "Une piste courte (10 % ou moins) dont le texte est à 90 % ou plus dans la plus complète de même langue est marquée forcée.",
-            "importance": "basic",
-            "section": "Titres et indicateurs"
-          },
-          {
-            "id": "setTitles",
-            "label": "Nommer les pistes",
-            "type": "boolean",
-            "defaultValue": true,
-            "description": "Désactivez-le si le bloc « Noms de pistes » nomme les pistes ensuite.",
-            "importance": "basic",
-            "section": "Titres et indicateurs"
-          },
-          {
-            "id": "frenchDefault",
-            "label": "Sous-titre français par défaut",
-            "type": "boolean",
-            "defaultValue": true,
-            "description": "Quand l’unique audio de référence n’est pas français, le sous-titre français (complet de préférence, non forcé) est marqué par défaut.",
-            "importance": "basic",
-            "section": "Titres et indicateurs"
-          },
-          {
-            "id": "fontFamily",
-            "label": "Famille de police",
-            "type": "text",
-            "importance": "basic",
-            "section": "Style personnalisé",
-            "defaultValue": "Trebuchet MS",
-            "visibleWhenFieldId": "styleProfile",
-            "visibleWhenValue": "custom"
-          },
-          {
-            "id": "fontSize",
-            "label": "Taille sur une référence de 360 lignes",
-            "type": "number",
-            "importance": "basic",
-            "section": "Style personnalisé",
-            "min": 6,
-            "max": 80,
-            "defaultValue": 23,
-            "visibleWhenFieldId": "styleProfile",
-            "visibleWhenValue": "custom"
-          },
-          {
-            "id": "fontOutline",
-            "label": "Contour sur 360 lignes",
-            "type": "number",
-            "importance": "basic",
-            "section": "Style personnalisé",
-            "min": 0,
-            "max": 10,
-            "defaultValue": 2.5,
-            "visibleWhenFieldId": "styleProfile",
-            "visibleWhenValue": "custom"
-          },
-          {
-            "id": "fontMargin",
-            "label": "Marge basse sur 360 lignes",
-            "type": "number",
-            "importance": "basic",
-            "section": "Style personnalisé",
-            "min": 0,
-            "max": 100,
-            "defaultValue": 20,
-            "visibleWhenFieldId": "styleProfile",
-            "visibleWhenValue": "custom"
-          }
-        ]
-      },
-      "requiredTools": [
-        {
-          "toolId": "ffmpeg",
-          "minimumVersion": null,
-          "requiredCapabilities": []
-        },
-        {
-          "toolId": "mkvtoolnix",
-          "minimumVersion": null,
-          "requiredCapabilities": []
-        }
-      ],
-      "requiresMedia": true,
-      "requiresWriteAccess": true,
-      "compatiblePluginVersions": [
-        "1.0.0",
-        "1.1.0",
-        "1.2.0",
-        "1.3.1"
-      ],
-      "producesFiles": false,
       "category": "text"
     },
     {
@@ -317,7 +140,10 @@
         "1.0.0",
         "1.1.0",
         "1.2.0",
-        "1.3.1"
+        "1.3.1",
+        "1.3.2",
+        "1.3.3",
+        "1.4.0"
       ],
       "producesFiles": false,
       "category": "text"
@@ -326,7 +152,7 @@
       "id": "subtitles-add-track",
       "version": "1.0.0",
       "name": "Ajouter des sous-titres",
-      "description": "Ajoute un fichier de sous-titres au conteneur MKV.",
+      "description": "Ajoute un fichier de sous-titres au conteneur MKV, produit par le flow ou cité dans le catalogue.",
       "kind": "action",
       "mediaType": "subtitles",
       "supportedFlowMediaTypes": [
@@ -370,11 +196,24 @@
             "id": "sourceFile",
             "label": "Fichier à ajouter",
             "type": "text",
-            "required": true,
-            "description": "Référence à un fichier local ou à un résultat produit par le flow.",
+            "required": false,
+            "description": "Fichier produit par le flow. Laissez vide si une ressource de sous-titres est citée.",
             "importance": "basic",
             "section": "Paramètres",
             "editor": "artifact"
+          },
+          {
+            "id": "resource",
+            "label": "Ressource de sous-titres",
+            "type": "text",
+            "required": false,
+            "defaultValue": "",
+            "description": "Fichier du catalogue (identifiant:version), à la place du fichier produit par le flow. Un seul des deux.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "resource",
+            "resourceKind": "subtitle",
+            "requiresPluginVersion": "1.5.0"
           },
           {
             "id": "language",
@@ -418,7 +257,10 @@
         "1.0.0",
         "1.1.0",
         "1.2.0",
-        "1.3.1"
+        "1.3.1",
+        "1.3.2",
+        "1.3.3",
+        "1.4.0"
       ],
       "producesFiles": false,
       "category": "text"
@@ -522,7 +364,10 @@
         "1.0.0",
         "1.1.0",
         "1.2.0",
-        "1.3.1"
+        "1.3.1",
+        "1.3.2",
+        "1.3.3",
+        "1.4.0"
       ],
       "producesFiles": false,
       "category": "text"
@@ -561,7 +406,7 @@
             "id": "styleProfile",
             "label": "Profil de style",
             "type": "select",
-            "defaultValue": "crunchyroll",
+            "defaultValue": "none",
             "options": [
               {
                 "value": "crunchyroll",
@@ -576,11 +421,25 @@
                 "label": "Style personnalisé (instantané du flow)"
               }
             ],
-            "description": "Le profil intégré est un réglage initial en lecture seule. Les polices qu’il utilise (Trebuchet MS Gras, Arial Gras) s’ajoutent avec le bloc « Polices ».",
+            "description": "Conservé pour les flows déjà publiés. Le moteur n’applique plus ce choix : citez une ressource de profil.",
             "importance": "basic",
             "section": "Paramètres",
             "requiresPluginVersion": "1.2.0",
-            "requiresPluginVersionValue": "custom"
+            "requiresPluginVersionValue": "custom",
+            "legacyOnly": true
+          },
+          {
+            "id": "profile",
+            "label": "Profil de sous-titres",
+            "type": "text",
+            "required": false,
+            "defaultValue": "",
+            "description": "Ressource du catalogue (identifiant:version). Vide : ne pas restyler. Les mesures du document sont celles du canevas de référence et sont mises à l’échelle du cadre affiché.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "resource",
+            "resourceKind": "subtitle-profile",
+            "requiresPluginVersion": "1.5.0"
           },
           {
             "id": "fontFamily",
@@ -590,7 +449,8 @@
             "section": "Style personnalisé",
             "defaultValue": "Trebuchet MS",
             "visibleWhenFieldId": "styleProfile",
-            "visibleWhenValue": "custom"
+            "visibleWhenValue": "custom",
+            "legacyOnly": true
           },
           {
             "id": "fontSize",
@@ -602,7 +462,8 @@
             "max": 80,
             "defaultValue": 23,
             "visibleWhenFieldId": "styleProfile",
-            "visibleWhenValue": "custom"
+            "visibleWhenValue": "custom",
+            "legacyOnly": true
           },
           {
             "id": "fontOutline",
@@ -614,7 +475,8 @@
             "max": 10,
             "defaultValue": 2.5,
             "visibleWhenFieldId": "styleProfile",
-            "visibleWhenValue": "custom"
+            "visibleWhenValue": "custom",
+            "legacyOnly": true
           },
           {
             "id": "fontMargin",
@@ -626,7 +488,8 @@
             "max": 100,
             "defaultValue": 20,
             "visibleWhenFieldId": "styleProfile",
-            "visibleWhenValue": "custom"
+            "visibleWhenValue": "custom",
+            "legacyOnly": true
           }
         ]
       },
@@ -647,7 +510,10 @@
       "compatiblePluginVersions": [
         "1.1.0",
         "1.2.0",
-        "1.3.1"
+        "1.3.1",
+        "1.3.2",
+        "1.3.3",
+        "1.4.0"
       ],
       "minimumRuntimePluginVersion": "1.1.0",
       "producesFiles": false,
@@ -657,7 +523,7 @@
       "id": "subtitles-style-ass",
       "version": "1.1.0",
       "name": "Appliquer un style ASS",
-      "description": "Applique le profil aux pistes ASS simples ; préserve les compositions complexes. Ne convertit pas les SRT.",
+      "description": "Applique le profil de sous-titres cité aux pistes ASS simples ; préserve les compositions complexes. Ne convertit pas les SRT.",
       "kind": "action",
       "mediaType": "video",
       "supportedFlowMediaTypes": [
@@ -687,7 +553,7 @@
             "id": "styleProfile",
             "label": "Profil de style",
             "type": "select",
-            "defaultValue": "crunchyroll",
+            "defaultValue": "none",
             "options": [
               {
                 "value": "crunchyroll",
@@ -702,11 +568,25 @@
                 "label": "Style personnalisé (instantané du flow)"
               }
             ],
-            "description": "Le profil intégré est un réglage initial en lecture seule. Les polices qu’il utilise (Trebuchet MS Gras, Arial Gras) s’ajoutent avec le bloc « Polices ».",
+            "description": "Conservé pour les flows déjà publiés. Le moteur n’applique plus ce choix : citez une ressource de profil.",
             "importance": "basic",
             "section": "Paramètres",
             "requiresPluginVersion": "1.2.0",
-            "requiresPluginVersionValue": "custom"
+            "requiresPluginVersionValue": "custom",
+            "legacyOnly": true
+          },
+          {
+            "id": "profile",
+            "label": "Profil de sous-titres",
+            "type": "text",
+            "required": false,
+            "defaultValue": "",
+            "description": "Ressource du catalogue (identifiant:version). Vide : ne pas restyler. Les mesures du document sont celles du canevas de référence et sont mises à l’échelle du cadre affiché.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "resource",
+            "resourceKind": "subtitle-profile",
+            "requiresPluginVersion": "1.5.0"
           },
           {
             "id": "fontFamily",
@@ -716,7 +596,8 @@
             "section": "Style personnalisé",
             "defaultValue": "Trebuchet MS",
             "visibleWhenFieldId": "styleProfile",
-            "visibleWhenValue": "custom"
+            "visibleWhenValue": "custom",
+            "legacyOnly": true
           },
           {
             "id": "fontSize",
@@ -728,7 +609,8 @@
             "max": 80,
             "defaultValue": 23,
             "visibleWhenFieldId": "styleProfile",
-            "visibleWhenValue": "custom"
+            "visibleWhenValue": "custom",
+            "legacyOnly": true
           },
           {
             "id": "fontOutline",
@@ -740,7 +622,8 @@
             "max": 10,
             "defaultValue": 2.5,
             "visibleWhenFieldId": "styleProfile",
-            "visibleWhenValue": "custom"
+            "visibleWhenValue": "custom",
+            "legacyOnly": true
           },
           {
             "id": "fontMargin",
@@ -752,7 +635,8 @@
             "max": 100,
             "defaultValue": 20,
             "visibleWhenFieldId": "styleProfile",
-            "visibleWhenValue": "custom"
+            "visibleWhenValue": "custom",
+            "legacyOnly": true
           }
         ]
       },
@@ -773,7 +657,10 @@
       "compatiblePluginVersions": [
         "1.1.0",
         "1.2.0",
-        "1.3.1"
+        "1.3.1",
+        "1.3.2",
+        "1.3.3",
+        "1.4.0"
       ],
       "minimumRuntimePluginVersion": "1.1.0",
       "producesFiles": false,
@@ -827,7 +714,10 @@
       "compatiblePluginVersions": [
         "1.1.0",
         "1.2.0",
-        "1.3.1"
+        "1.3.1",
+        "1.3.2",
+        "1.3.3",
+        "1.4.0"
       ],
       "minimumRuntimePluginVersion": "1.1.0",
       "producesFiles": false,
@@ -881,7 +771,10 @@
       "compatiblePluginVersions": [
         "1.1.0",
         "1.2.0",
-        "1.3.1"
+        "1.3.1",
+        "1.3.2",
+        "1.3.3",
+        "1.4.0"
       ],
       "minimumRuntimePluginVersion": "1.1.0",
       "producesFiles": false,
@@ -949,7 +842,10 @@
       "compatiblePluginVersions": [
         "1.1.0",
         "1.2.0",
-        "1.3.1"
+        "1.3.1",
+        "1.3.2",
+        "1.3.3",
+        "1.4.0"
       ],
       "minimumRuntimePluginVersion": "1.1.0",
       "producesFiles": false,
@@ -1008,11 +904,77 @@
       "compatiblePluginVersions": [
         "1.1.0",
         "1.2.0",
-        "1.3.1"
+        "1.3.1",
+        "1.3.2",
+        "1.3.3",
+        "1.4.0"
       ],
       "minimumRuntimePluginVersion": "1.1.0",
       "producesFiles": false,
       "category": "media-rules"
+    },
+    {
+      "id": "subtitles-default-subtitle",
+      "version": "1.0.0",
+      "name": "Choisir le sous-titre par défaut",
+      "description": "Marque par défaut le premier sous-titre non forcé de la langue choisie, ou celui qui l’est déjà s’il y en a plusieurs, et retire le défaut des autres. Une seule commande mkvpropedit sur les indicateurs. Ne convertit pas, ne change pas le style, les noms, les doublons ni l’indicateur forcé.",
+      "kind": "action",
+      "mediaType": "video",
+      "supportedFlowMediaTypes": [
+        "video"
+      ],
+      "outputs": [
+        {
+          "id": "success",
+          "label": "Suite",
+          "description": "L’indicateur par défaut des sous-titres a été modifié."
+        },
+        {
+          "id": "unchanged",
+          "label": "Déjà conforme",
+          "description": "Le sous-titre demandé est déjà le seul par défaut, ou le conteneur n’est ni un Matroska ni un MP4."
+        },
+        {
+          "id": "error",
+          "label": "Erreur",
+          "description": "Les propriétés des pistes n’ont pas pu être lues ou modifiées."
+        }
+      ],
+      "configurationSchema": {
+        "version": 1,
+        "fields": [
+          {
+            "id": "defaultSubtitleLanguage",
+            "label": "Langue du sous-titre par défaut",
+            "type": "text",
+            "defaultValue": "fr",
+            "description": "Code de langue (fr, en, ja…). Le sous-titre non forcé de cette langue devient le seul défaut.",
+            "importance": "basic",
+            "section": "Paramètres",
+            "editor": "language"
+          }
+        ]
+      },
+      "requiredTools": [
+        {
+          "toolId": "mkvtoolnix",
+          "minimumVersion": null,
+          "requiredCapabilities": []
+        }
+      ],
+      "requiresMedia": true,
+      "requiresWriteAccess": true,
+      "compatiblePluginVersions": [
+        "1.1.0",
+        "1.2.0",
+        "1.3.1",
+        "1.3.2",
+        "1.3.3",
+        "1.4.0"
+      ],
+      "minimumRuntimePluginVersion": "1.4.0",
+      "producesFiles": false,
+      "category": "text"
     },
     {
       "id": "subtitles-snapshot-track-titles",
@@ -1057,7 +1019,10 @@
       "compatiblePluginVersions": [
         "1.1.0",
         "1.2.0",
-        "1.3.1"
+        "1.3.1",
+        "1.3.2",
+        "1.3.3",
+        "1.4.0"
       ],
       "minimumRuntimePluginVersion": "1.1.0",
       "producesFiles": false,
