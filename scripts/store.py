@@ -60,7 +60,7 @@ def download_url(ref: str, package_id: str, version: str) -> str:
 
 def load_validator(name: str) -> Callable[[Json], Json]:
     try:
-        import fastjsonschema  # type: ignore[import-untyped]
+        import fastjsonschema  # type: ignore[import-untyped,unused-ignore]
     except ImportError:
         sys.exit("fastjsonschema est requis : pip install fastjsonschema")
     return fastjsonschema.compile(read_json(os.path.join(ROOT, "schemas", name)))
