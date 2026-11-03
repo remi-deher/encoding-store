@@ -1,10 +1,13 @@
 {
   "contractVersion": 1,
   "id": "plex",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "name": "Plex",
   "supportedHostContractVersions": [
     1
+  ],
+  "capabilities": [
+    "network"
   ],
   "configurationSchema": {
     "version": 1,

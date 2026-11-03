@@ -1,10 +1,13 @@
 {
   "contractVersion": 1,
   "id": "sonarr",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "name": "Sonarr",
   "supportedHostContractVersions": [
     1
+  ],
+  "capabilities": [
+    "network"
   ],
   "configurationSchema": {
     "version": 1,

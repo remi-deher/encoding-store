@@ -119,7 +119,7 @@
       "summary": "Composants fondamentaux des flows : fichiers d’entrée, scripts, préparation et exécution du traitement (natifs).",
       "category": "utilities",
       "requiredTools": [],
-      "latestVersion": "1.10.2",
+      "latestVersion": "1.10.3",
       "versions": [
         {
           "version": "1.10.1",
@@ -130,6 +130,11 @@
           "version": "1.10.2",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/base/1.10.2/1.10.2.zip",
           "sha256": "4114b4531e1a0f74a724ca6bc67a852d4978fb83c683a2b81861d70900643ba9"
+        },
+        {
+          "version": "1.10.3",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/base/1.10.3/1.10.3.zip",
+          "sha256": "ef3ea9983d65f3dc1625ee13ddcc178e96b9e7f04c37485b5858f8d04d652f39"
         }
       ]
     },
@@ -189,7 +194,7 @@
       "summary": "Actualise les bibliothèques et métadonnées Jellyfin, vérifie un élément et les lectures en cours.",
       "category": "media-servers",
       "requiredTools": [],
-      "latestVersion": "1.0.1",
+      "latestVersion": "1.0.2",
       "versions": [
         {
           "version": "1.0.0",
@@ -200,6 +205,11 @@
           "version": "1.0.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/jellyfin/1.0.1/1.0.1.zip",
           "sha256": "5c5f4a048eb0aba348d084b44dbb04b5785b2f2bf5c7dbe38fe014f8fcd13e2b"
+        },
+        {
+          "version": "1.0.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/jellyfin/1.0.2/1.0.2.zip",
+          "sha256": "2745e7fe52f23ab3f863b41159ecb102c6a0ecdc2c2459827120beb533a26b0b"
         }
       ]
     },
@@ -259,7 +269,7 @@
       "summary": "Actualise les bibliothèques Plex, attend la fin du scan, vérifie l’indexation et les lectures en cours.",
       "category": "media-servers",
       "requiredTools": [],
-      "latestVersion": "1.1.1",
+      "latestVersion": "1.1.2",
       "versions": [
         {
           "version": "1.1.0",
@@ -270,6 +280,11 @@
           "version": "1.1.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/plex/1.1.1/1.1.1.zip",
           "sha256": "e14de108e5382dc621f63c6c5f4e9ec76ebea701a1356a05541c396b78ef82c4"
+        },
+        {
+          "version": "1.1.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/plex/1.1.2/1.1.2.zip",
+          "sha256": "2a72a560101a11bfd41396e51e754299e7fd23c14d2dde8f2b9ed336093472d6"
         }
       ]
     },
@@ -309,7 +324,7 @@
       "summary": "Relit un film Radarr, lance sa recherche et vérifie que le fichier est connu du service.",
       "category": "arr",
       "requiredTools": [],
-      "latestVersion": "1.0.1",
+      "latestVersion": "1.0.2",
       "versions": [
         {
           "version": "1.0.0",
@@ -320,6 +335,11 @@
           "version": "1.0.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/radarr/1.0.1/1.0.1.zip",
           "sha256": "2dc07d90e3e86a8bac41d793b5af53e7f48072f5b84c5fb06eeab6d70b87e949"
+        },
+        {
+          "version": "1.0.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/radarr/1.0.2/1.0.2.zip",
+          "sha256": "2529542d5a6ed57ee6b27abd3936dfcc00599354407dab6fced27e4108d4be74"
         }
       ]
     },
@@ -329,7 +349,7 @@
       "summary": "Relit une série Sonarr, lance la recherche des épisodes manquants et vérifie qu’un épisode est connu.",
       "category": "arr",
       "requiredTools": [],
-      "latestVersion": "1.0.1",
+      "latestVersion": "1.0.2",
       "versions": [
         {
           "version": "1.0.0",
@@ -340,6 +360,11 @@
           "version": "1.0.1",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/sonarr/1.0.1/1.0.1.zip",
           "sha256": "cb42a9f4c4722169a5c07a8d40fe429037b5d4058f59ec85d2bc7a4f7f031b08"
+        },
+        {
+          "version": "1.0.2",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/sonarr/1.0.2/1.0.2.zip",
+          "sha256": "5675d328960be1bd75b6832c5ca4690130c168f79bbd7ddf1e7d35a88c225896"
         }
       ]
     },
@@ -349,7 +374,7 @@
       "summary": "Extraction, conversion, stylage et nettoyage des sous-titres et des polices (composants natifs du moteur).",
       "category": "subtitles",
       "requiredTools": [],
-      "latestVersion": "1.3.3",
+      "latestVersion": "1.5.0",
       "versions": [
         {
           "version": "1.3.0",
@@ -370,6 +395,11 @@
           "version": "1.3.3",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/subtitles/1.3.3/1.3.3.zip",
           "sha256": "ccc1c67e155b27b87f7cfcc710aa83bab7727c36454c453f4880de6be84897ca"
+        },
+        {
+          "version": "1.5.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/subtitles/1.5.0/1.5.0.zip",
+          "sha256": "b43057743d077fa397fd6b9bb362499d7274ac90d8e069a8088554d7de30275a"
         }
       ]
     },
