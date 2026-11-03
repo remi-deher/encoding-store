@@ -10,6 +10,7 @@
     "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
     "name": { "type": "string", "minLength": 1 },
     "supportedHostContractVersions": { "type": "array", "items": { "type": "integer" } },
+    "capabilities": { "type": "array", "uniqueItems": true, "items": { "enum": ["network"] } },
     "components": { "type": "array" },
     "requiredToolPackages": { "type": "array" },
     "runtime": {
