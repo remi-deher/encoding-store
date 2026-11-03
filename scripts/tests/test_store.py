@@ -97,14 +97,17 @@ class StoreTests(unittest.TestCase):
             manifest_path = os.path.join(directory, "plugins", "plex", "manifests", "plex.json")
             with open(manifest_path, encoding="utf-8") as handle:
                 text = handle.read()
+            current = json.loads(text)["version"]
+            major, minor, patch = current.split(".")
+            new_version = "%s.%s.%d" % (major, minor, int(patch) + 1)
             with open(manifest_path, "w", encoding="utf-8") as handle:
-                handle.write(text.replace('"version": "1.1.1"', '"version": "1.1.2"', 1))
+                handle.write(text.replace('"version": "%s"' % current, '"version": "%s"' % new_version, 1))
             with contextlib.redirect_stdout(io.StringIO()):
                 store.command_build(argparse.Namespace(id="plex", ref="v2026.11"))
             index = store.read_json(store.INDEX_PATH)
             plex = next(plugin for plugin in index["plugins"] if plugin["id"] == "plex")
-            self.assertEqual("1.1.2", plex["latestVersion"])
-            self.assertIn("/v2026.11/packages/plex/1.1.2/1.1.2.zip", plex["versions"][-1]["downloadUrl"])
+            self.assertEqual(new_version, plex["latestVersion"])
+            self.assertIn("/v2026.11/packages/plex/%s/%s.zip" % (new_version, new_version), plex["versions"][-1]["downloadUrl"])
             code, output = verify()
             self.assertEqual(0, code, output)
 
