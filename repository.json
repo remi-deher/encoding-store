@@ -119,7 +119,7 @@
       "summary": "Composants fondamentaux des flows : fichiers d’entrée, scripts, préparation et exécution du traitement (natifs).",
       "category": "utilities",
       "requiredTools": [],
-      "latestVersion": "1.10.2",
+      "latestVersion": "1.10.3",
       "versions": [
         {
           "version": "1.10.1",
@@ -130,6 +130,11 @@
           "version": "1.10.2",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/base/1.10.2/1.10.2.zip",
           "sha256": "4114b4531e1a0f74a724ca6bc67a852d4978fb83c683a2b81861d70900643ba9"
+        },
+        {
+          "version": "1.10.3",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/base/1.10.3/1.10.3.zip",
+          "sha256": "ef3ea9983d65f3dc1625ee13ddcc178e96b9e7f04c37485b5858f8d04d652f39"
         }
       ]
     },
@@ -369,7 +374,7 @@
       "summary": "Extraction, conversion, stylage et nettoyage des sous-titres et des polices (composants natifs du moteur).",
       "category": "subtitles",
       "requiredTools": [],
-      "latestVersion": "1.3.3",
+      "latestVersion": "1.5.0",
       "versions": [
         {
           "version": "1.3.0",
@@ -390,6 +395,11 @@
           "version": "1.3.3",
           "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/subtitles/1.3.3/1.3.3.zip",
           "sha256": "ccc1c67e155b27b87f7cfcc710aa83bab7727c36454c453f4880de6be84897ca"
+        },
+        {
+          "version": "1.5.0",
+          "downloadUrl": "https://raw.githubusercontent.com/remi-deher/encoding-store/main/packages/subtitles/1.5.0/1.5.0.zip",
+          "sha256": "b43057743d077fa397fd6b9bb362499d7274ac90d8e069a8088554d7de30275a"
         }
       ]
     },
