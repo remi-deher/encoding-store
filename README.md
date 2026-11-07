@@ -28,7 +28,7 @@ python3 -m unittest discover -s scripts/tests -v
 python3 -m unittest discover -s plugins/tests -v
 ```
 
-`verify` checks every archive hash, the package manifests against the schemas, that each published archive matches its sources, and that no archive is orphaned. CI also rejects any change to an already published archive.
+`verify` checks every archive hash, the package manifests against the schemas, that each plugin's sources match its latest published archive (a source change without a new version, a version bumped without its archive, or sources rolled back to an older version all fail), that every file in a plugin's source directory is declared in `plugins/packages.json`, archive entries (no duplicates, symlinks or oversized content), and that no file under `packages/` is orphaned. `verify --base REF` also rejects any change to an archive or to the `repository.json` entry of a version already published at the merge base with `REF` (only repinning a `main` download URL to a commit SHA is allowed). CI runs both on pull requests and on pushes to `main` and `dev`, and runs them even when lint or type checks fail.
 
 ## Trust
 

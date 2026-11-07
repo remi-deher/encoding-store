@@ -12,7 +12,7 @@ pip install fastjsonschema ruff mypy
 ruff check .
 mypy                                          # SDK, plugins Python et scripts/store.py
 npm ci && npm run typecheck                   # SDK JavaScript (JSDoc + tsc strict) et plugin d'exemple
-python3 scripts/store.py verify              # hashes, schémas, archives contre sources, orphelins
+python3 scripts/store.py verify              # hashes, schémas, sources = dernière archive publiée, fichiers non déclarés, orphelins
 python3 -m unittest discover -s scripts/tests -v
 python3 -m unittest discover -s plugins/tests -v
 ```
@@ -21,7 +21,7 @@ python3 -m unittest discover -s plugins/tests -v
 
 - `plugins/packages.json` décrit chaque paquet de plugin : manifeste, runtime, fichiers embarqués, nom, résumé, catégorie. C'est la source de vérité de l'index pour ces champs.
 - `plugins/sdk/` contient l'unique SDK. Il est copié dans les paquets Python à la construction : ne jamais éditer une copie.
-- Un paquet publié (`packages/**`) ne change jamais : `verify` échoue si les sources d'une version diffèrent de son archive, et la CI (`verify --base`) refuse toute modification ou suppression d'archive.
+- Un paquet publié (`packages/**`) ne change jamais : `verify` échoue si les sources d'un plugin diffèrent de sa dernière archive publiée sans nouvelle version, si une version incrémentée n'a pas d'archive, si les sources reviennent à une version antérieure, ou si un fichier du répertoire d'un plugin n'est déclaré par aucun paquet de `plugins/packages.json`. La CI (`verify --base`, sur PR et sur push `main`/`dev`) refuse toute modification ou suppression d'archive publiée et de son entrée dans `repository.json`, comparée au point de divergence avec la base. Sur push, le commit précédent de la branche doit rester un ancêtre du nouveau (`verify --require-ancestor`) : un push forcé qui réécrit l'historique de `main` ou `dev` fait échouer la CI.
 - Les paquets d'outils (`packages/ffmpeg`, etc.) viennent des `.deb` Ubuntu listés dans `tools/ubuntu-noble-lock.json` ; ils ne sont pas construits par `store.py` mais sont contrôlés (hash, exécutables, licences).
 
 ## Publier une nouvelle version d'un plugin

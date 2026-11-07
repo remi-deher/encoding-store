@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
 
 permissions:
@@ -28,12 +28,27 @@ jobs:
         run: mypy
       - name: Type check (JavaScript SDK)
         run: npm ci && npm run typecheck
-      - name: Catalogue integrity (hashes, schemas, archives vs sources)
+      # Les contrôles d'intégrité tournent même si le lint ou le typage échoue : un échec sans rapport ne doit pas les masquer.
+      - name: Catalogue integrity (hashes, schemas, sources vs latest published archive)
+        if: ${{ !cancelled() }}
         run: python3 scripts/store.py verify
       - name: Published packages are immutable
-        if: github.event_name == 'pull_request'
-        run: python3 scripts/store.py verify --base "origin/${{ github.base_ref }}"
+        if: ${{ !cancelled() }}
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            python3 scripts/store.py verify --base "origin/$BASE_REF"
+          elif [ -n "$BEFORE" ] && [ "$BEFORE" != 0000000000000000000000000000000000000000 ]; then
+            # Push : le commit précédent doit rester ancêtre de HEAD, sinon l'historique a été réécrit (push forcé).
+            python3 scripts/store.py verify --base "$BEFORE" --require-ancestor
+          else
+            python3 scripts/store.py verify --base origin/main
+          fi
       - name: Store tooling tests
+        if: ${{ !cancelled() }}
         run: python3 -m unittest discover -s scripts/tests -v
       - name: Plugin tests
+        if: ${{ !cancelled() }}
         run: python3 -m unittest discover -s plugins/tests -v

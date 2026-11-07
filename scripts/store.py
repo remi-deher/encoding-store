@@ -31,6 +31,8 @@ SPEC_PATH = os.path.join(ROOT, "plugins", "packages.json")
 DOWNLOAD_BASE = "https://raw.githubusercontent.com/remi-deher/encoding-store"
 FIXED_DATE = (1980, 1, 1, 0, 0, 0)
 SEMVER = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
+MAX_UNCOMPRESSED = 512 * 1024 * 1024
+S_IFMT, S_IFLNK = 0o170000, 0o120000
 
 
 def semver_key(version: str) -> tuple[int, ...]:
@@ -177,9 +179,18 @@ def command_show(args: argparse.Namespace) -> int:
 # --- contrôle ---------------------------------------------------------------------------------------------------
 
 def check_zip_names(archive: zipfile.ZipFile, label: str, problems: Problems) -> None:
-    for name in archive.namelist():
+    names = archive.namelist()
+    for name in names:
         if name.startswith("/") or ".." in name.split("/") or "\\" in name:
             problems.append("%s : nom d'entrée dangereux %r." % (label, name))
+    # Un nom dupliqué laisse deux extracteurs voir deux contenus différents : verify ne lit que le dernier.
+    for name in sorted({name for name in names if names.count(name) > 1}):
+        problems.append("%s : entrée dupliquée %r." % (label, name))
+    for info in archive.infolist():
+        if (info.external_attr >> 16) & S_IFMT == S_IFLNK:
+            problems.append("%s : lien symbolique interdit (%s)." % (label, info.filename))
+    if sum(info.file_size for info in archive.infolist()) > MAX_UNCOMPRESSED:
+        problems.append("%s : taille décompressée supérieure à %d Mio." % (label, MAX_UNCOMPRESSED // (1024 * 1024)))
 
 
 def check_versions(kind: str, item: Json, problems: Problems) -> None:
@@ -254,15 +265,63 @@ def check_licenses(problems: Problems) -> None:
             problems.append("verrou %s : fichier de licence absent (%s)." % (name, package["copyrightPath"]))
 
 
-def check_immutability(base: str, problems: Problems) -> None:
-    result = subprocess.run(["git", "diff", "--name-status", "--no-renames", base, "--", "packages"], cwd=ROOT, capture_output=True, text=True, check=False)
+def git(*args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=False)
+
+
+def pinned_url_change(old: str, new: str) -> bool:
+    """Seule évolution admise d'un lien publié : de la branche main vers un SHA de commit, même chemin (ticket #5)."""
+    prefix = DOWNLOAD_BASE + "/main/"
+    match = re.fullmatch(re.escape(DOWNLOAD_BASE) + r"/[0-9a-f]{40}/(.+)", new)
+    return old.startswith(prefix) and match is not None and match.group(1) == old[len(prefix):]
+
+
+def check_published_entries(old_index: Json, new_index: Json, base: str, problems: Problems) -> None:
+    """Chaque version présente dans l'index de la base y reste, avec le même hash et le même lien (hors épinglage)."""
+    for kind in ("plugins", "tools"):
+        current = {(item["id"], entry["version"]): entry for item in new_index.get(kind, []) for entry in item["versions"]}
+        for item in old_index.get(kind, []):
+            for old in item["versions"]:
+                label = "%s %s %s" % (kind[:-1], item["id"], old["version"])
+                new = current.get((item["id"], old["version"]))
+                if new is None:
+                    problems.append("%s : version publiée retirée de repository.json (présente sur %s)." % (label, base))
+                    continue
+                for key in sorted(set(old) | set(new)):
+                    if old.get(key) == new.get(key):
+                        continue
+                    if key == "downloadUrl" and pinned_url_change(old[key], new[key]):
+                        continue
+                    problems.append("%s : %s modifié dans repository.json, une version publiée est immuable." % (label, key))
+
+
+def check_immutability(base: str, problems: Problems, require_ancestor: bool = False) -> None:
+    # Sur push, la base est le commit précédent de la branche : s'il n'est plus ancêtre de HEAD, l'historique a été réécrit
+    # (push forcé) et le point de divergence recule avant les archives retirées ou republiées. On refuse au lieu de comparer.
+    if require_ancestor and git("merge-base", "--is-ancestor", base, "HEAD").returncode != 0:
+        problems.append("historique réécrit depuis %s : ce commit n'est plus un ancêtre de HEAD (push forcé ?), "
+                        "l'immuabilité des paquets publiés ne peut pas être garantie." % base)
+        return
+    # Point de divergence et non pointe de la base : une branche en retard ne doit pas voir les ajouts de la base comme des suppressions.
+    merge_base = git("merge-base", base, "HEAD")
+    if merge_base.returncode != 0:
+        problems.append("git merge-base %s HEAD a échoué : %s" % (base, merge_base.stderr.strip()))
+        return
+    fork = merge_base.stdout.strip()
+    # Comparaison avec l'arbre de travail : une modification non validée est vue aussi.
+    result = git("diff", "--name-status", "--no-renames", fork, "--", "packages")
     if result.returncode != 0:
-        problems.append("git diff %s a échoué : %s" % (base, result.stderr.strip()))
+        problems.append("git diff %s a échoué : %s" % (fork, result.stderr.strip()))
         return
     for line in result.stdout.splitlines():
         status, _, path = line.partition("\t")
         if status != "A":
             problems.append("%s : un paquet publié est immuable (statut %s)." % (path, status))
+    old_index = git("show", fork + ":repository.json")
+    if old_index.returncode != 0:
+        problems.append("repository.json illisible à %s : %s" % (fork, old_index.stderr.strip()))
+        return
+    check_published_entries(json.loads(old_index.stdout), read_json(INDEX_PATH), base, problems)
 
 
 def command_verify(args: argparse.Namespace) -> int:
@@ -285,12 +344,13 @@ def command_verify(args: argparse.Namespace) -> int:
         check_versions("outil", tool, problems)
         check_archives("tool", tool, tool_validator, problems, published)
     check_plugin_sources(index, spec, contents, problems)
-    on_disk = {os.path.relpath(path, ROOT) for path in glob.glob(os.path.join(ROOT, "packages", "*", "*", "*"))}
+    on_disk = {os.path.relpath(path, ROOT) for path in glob.glob(os.path.join(ROOT, "packages", "**", "*"), recursive=True)
+               if not os.path.isdir(path)}
     for orphan in sorted(on_disk - published):
         problems.append("%s : archive absente de repository.json." % orphan)
     check_licenses(problems)
     if args.base:
-        check_immutability(args.base, problems)
+        check_immutability(args.base, problems, getattr(args, "require_ancestor", False))
     for problem in problems:
         print("ERREUR", problem)
     print("%d erreur(s)." % len(problems) if problems else "Catalogue valide.")
@@ -306,6 +366,20 @@ def check_plugin_sources(index: Json, spec: Json, contents: dict[str, dict[str, 
         problems.append("plugin %s : sans sources déclarées dans plugins/packages.json." % package_id)
     for package_id in sorted(sources & set(plugins)):
         check_one_plugin(plugins[package_id], spec, contents[package_id], problems)
+    check_undeclared_sources(spec, problems)
+
+
+def check_undeclared_sources(spec: Json, problems: Problems) -> None:
+    """Tout fichier du répertoire d'un plugin (celui de son manifeste) doit entrer dans un paquet : sinon il manquerait à l'archive."""
+    plugins_dir = os.path.join(ROOT, "plugins")
+    entries = [entry for key, entry in spec.items() if not key.startswith("_")]
+    declared = {entry["manifest"] for entry in entries} | {source for entry in entries for source in entry.get("files", {}).values()}
+    for home in sorted({entry["manifest"].split("/")[0] for entry in entries}):
+        for path in sorted(glob.glob(os.path.join(plugins_dir, home, "**", "*"), recursive=True)):
+            relative = os.path.relpath(path, plugins_dir).replace(os.sep, "/")
+            if os.path.isdir(path) or "__pycache__" in relative.split("/") or relative in declared:
+                continue
+            problems.append("plugins/%s : fichier source déclaré par aucun paquet dans plugins/packages.json (il manquerait à l'archive publiée)." % relative)
 
 
 def check_one_plugin(plugin: Json, spec: Json, published_versions: dict[str, dict[str, bytes]], problems: Problems) -> None:
@@ -322,6 +396,10 @@ def check_one_plugin(plugin: Json, spec: Json, published_versions: dict[str, dic
     if published is None:
         problems.append("plugin %s : la version %s des sources n'est pas publiée (python3 scripts/store.py build %s)." % (package_id, version, package_id))
         return
+    if version != plugin["latestVersion"]:
+        problems.append("plugin %s : les sources sont en %s mais la dernière version publiée est %s (sources perdues ou retour arrière)."
+                        % (package_id, version, plugin["latestVersion"]))
+        return
     if set(published) != set(expected):
         problems.append("plugin %s %s : entrées de l'archive %s différentes des sources %s." % (package_id, version, sorted(published), sorted(expected)))
         return
@@ -335,6 +413,8 @@ def main(argv: list[str]) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     verify = commands.add_parser("verify")
     verify.add_argument("--base", help="référence git de comparaison : les paquets déjà publiés ne doivent pas changer")
+    verify.add_argument("--require-ancestor", action="store_true",
+                        help="avec --base : échoue si la base n'est pas un ancêtre de HEAD (push forcé, historique réécrit)")
     verify.set_defaults(handler=command_verify)
     build = commands.add_parser("build")
     build.add_argument("id")
