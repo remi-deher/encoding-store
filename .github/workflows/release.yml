@@ -72,7 +72,7 @@ jobs:
           TAG: ${{ steps.target.outputs.tag }}
         run: |
           set -euo pipefail
-          base="$(git describe --tags --abbrev=0 --match 'v[0-9]*' "$GITHUB_SHA^" 2>/dev/null || git rev-list --max-parents=0 "$GITHUB_SHA" | tail -n 1)"
+          base="$(git describe --tags --abbrev=0 --match 'v[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]' "$GITHUB_SHA^" 2>/dev/null || git rev-list --max-parents=0 "$GITHUB_SHA" | tail -n 1)"
           echo "Base de comparaison : $base"
           python3 scripts/store.py verify --base "$base" --release-tag "$TAG" --online
       - name: Checksums

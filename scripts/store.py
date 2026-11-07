@@ -52,6 +52,8 @@ RELEASE_TAG = re.compile(r"^v([0-9]{4})\.([0-9]{2})\.([0-9]{2})$")
 COMMIT_SHA = re.compile(r"^[0-9a-f]{40}$")
 # Refs admises dans downloadUrl : main (liens historiques), SHA de commit ou tag d'instantané. Rien d'autre, donc ni « .. » ni branche.
 DOWNLOAD_REF = r"(main|[0-9a-f]{40}|v[0-9]{4}\.[0-9]{2}\.[0-9]{2})"
+# Même motif pour git describe --match (glob) : un tag parasite plus proche (v1.0, v2-test) ne doit pas masquer l'instantané précédent.
+RELEASE_TAG_GLOB = "v[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]"
 UNRELEASED = "## Non publié"
 MAX_DOWNLOAD = 256 * 1024 * 1024
 DOWNLOAD_ATTEMPTS = 4
@@ -313,7 +315,7 @@ def check_tag(tag: str) -> None:
 
 def previous_tag(rev: str = "HEAD") -> str | None:
     """Dernier tag d'instantané atteignable depuis rev (rev exclu s'il est lui-même tagué : passer rev^)."""
-    result = git("describe", "--tags", "--abbrev=0", "--match", "v[0-9]*", rev)
+    result = git("describe", "--tags", "--abbrev=0", "--match", RELEASE_TAG_GLOB, rev)
     tag = result.stdout.strip()
     return tag if result.returncode == 0 and RELEASE_TAG.match(tag) else None
 
@@ -655,7 +657,13 @@ def check_published_entries(old_index: Json, new_index: Json, base: str, problem
                     problems.append("%s : %s modifié dans repository.json, une version publiée est immuable." % (label, key))
 
 
-def check_immutability(base: str, problems: Problems, notes: list[str]) -> None:
+def check_immutability(base: str, problems: Problems, notes: list[str], require_ancestor: bool = False) -> None:
+    # Sur push, la base est le commit précédent de la branche : s'il n'est plus ancêtre de HEAD, l'historique a été réécrit
+    # (push forcé) et le point de divergence recule avant les archives retirées ou republiées. On refuse au lieu de comparer.
+    if require_ancestor and git("merge-base", "--is-ancestor", base, "HEAD").returncode != 0:
+        problems.append("historique réécrit depuis %s : ce commit n'est plus un ancêtre de HEAD (push forcé ?), "
+                        "l'immuabilité des paquets publiés ne peut pas être garantie." % base)
+        return
     # Point de divergence et non pointe de la base : une branche en retard ne doit pas voir les ajouts de la base comme des suppressions.
     merge_base = git("merge-base", base, "HEAD")
     if merge_base.returncode != 0:
@@ -718,7 +726,7 @@ def command_verify(args: argparse.Namespace) -> int:
         check_tag(release_tag)
     pending = check_pinned_links(links, release_tag, problems, notes)
     if args.base:
-        check_immutability(args.base, problems, notes)
+        check_immutability(args.base, problems, notes, getattr(args, "require_ancestor", False))
     if getattr(args, "online", False):
         check_online(links, pending, problems, notes)
     for note in notes:
@@ -787,6 +795,8 @@ def main(argv: list[str]) -> int:
     verify.add_argument("--base", help="référence git de comparaison : les paquets déjà publiés ne doivent pas changer")
     verify.add_argument("--release-tag", help="tag vAAAA.MM.JJ en cours de publication : seul tag encore absent admis dans les liens")
     verify.add_argument("--online", action="store_true", help="télécharge chaque downloadUrl et compare son SHA-256 à l'index")
+    verify.add_argument("--require-ancestor", action="store_true",
+                        help="avec --base : échoue si la base n'est pas un ancêtre de HEAD (push forcé, historique réécrit)")
     verify.set_defaults(handler=command_verify)
     build = commands.add_parser("build")
     build.add_argument("id", nargs="?")
