@@ -39,13 +39,13 @@ jobs:
           BEFORE: ${{ github.event.before }}
         run: |
           if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
-            base="origin/$BASE_REF"
+            python3 scripts/store.py verify --base "origin/$BASE_REF"
           elif [ -n "$BEFORE" ] && [ "$BEFORE" != 0000000000000000000000000000000000000000 ]; then
-            base="$BEFORE"
+            # Push : le commit précédent doit rester ancêtre de HEAD, sinon l'historique a été réécrit (push forcé).
+            python3 scripts/store.py verify --base "$BEFORE" --require-ancestor
           else
-            base=origin/main
+            python3 scripts/store.py verify --base origin/main
           fi
-          python3 scripts/store.py verify --base "$base"
       - name: Store tooling tests
         if: ${{ !cancelled() }}
         run: python3 -m unittest discover -s scripts/tests -v

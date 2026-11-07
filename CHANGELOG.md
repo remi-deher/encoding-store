@@ -6,7 +6,7 @@ Les paquets publiés sont immuables : chaque modification de sources passe par u
 
 ### Outillage du dépôt
 - `verify` : les sources de chaque plugin doivent correspondre à sa dernière version publiée (retour arrière détecté), tout fichier du répertoire d'un plugin doit être déclaré dans `plugins/packages.json`, archives ZIP sans doublon, lien symbolique ni taille excessive, orphelins cherchés à toute profondeur de `packages/`.
-- `verify --base` : compare au point de divergence (plus de faux positifs sur une branche en retard) et protège aussi les entrées de `repository.json` des versions publiées (seul l'épinglage d'un lien `main` vers un SHA de commit est admis).
+- `verify --base` : compare au point de divergence (plus de faux positifs sur une branche en retard) et protège aussi les entrées de `repository.json` des versions publiées (seul l'épinglage d'un lien `main` vers un SHA de commit est admis). Sur push, `--require-ancestor` fait échouer la CI si l'historique a été réécrit (push forcé).
 - CI : déclenchée aussi sur push `dev`, immuabilité contrôlée sur push, contrôles d'intégrité et tests exécutés même si le lint ou le typage échoue.
 - `store.py show <id> [version]` affiche le manifeste interne indenté d'une archive publiée.
 - `scripts/store.py` : construction reproductible des paquets de plugins, contrôle complet du catalogue (`verify`), synchronisation des métadonnées.
