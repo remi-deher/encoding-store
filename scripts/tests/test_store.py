@@ -563,7 +563,7 @@ class DownloadLinkTests(unittest.TestCase):
         base = commit_all(self.directory, "plex suivant")
         code, output = run(store.command_release_prep, tag="v2099.02.01", ref=None)
         self.assertEqual(0, code, output)
-        self.assertIn("1 lien(s) visant un tag jamais créé réépinglé(s) à v2099.02.01", output)
+        self.assertIn("1 lien(s) visant un tag qui n'a jamais servi l'archive réépinglé(s) à v2099.02.01", output)
         after = index_entries()
         self.assertEqual(store.download_url("v2099.02.01", "plex", version), after[("plugins", "plex", version)]["downloadUrl"])
         self.assertEqual(before, {key: entry for key, entry in after.items() if key in before})
@@ -605,8 +605,33 @@ class DownloadLinkTests(unittest.TestCase):
         code, output = verify_with()
         self.assertEqual(1, code)
         self.assertIn("plugin plex %s : packages/plex/%s/%s.zip absent de v2099.11.07, le lien répondrait 404." % (version, version, version), output)
-        git(self.directory, "tag", "-f", "v2099.11.07")
-        self.assertEqual(0, verify_with()[0])
+        self.assertIn("Ne déplacez pas le tag", output)
+
+    def test_link_to_a_released_tag_without_the_archive_is_realigned_by_the_next_snapshot(self) -> None:
+        # Version construite dans sa PR le jour D, instantané vD préparé et tagué sans elle, PR fusionnée ensuite :
+        # le lien vise un tag existant qui ne contient pas l'archive. Il n'a jamais servi que des 404 : le prochain
+        # release-prep doit le réaligner (sans toucher au tag vD), sinon la CI reste bloquée.
+        init_git(self.directory)
+        git(self.directory, "tag", "v2099.11.07")
+        released = git(self.directory, "rev-parse", "refs/tags/v2099.11.07")
+        before = index_entries()
+        version = bump_patch(self.directory, "plex/manifests/plex.json")
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            store.command_build(argparse.Namespace(id="plex", ref="v2099.11.07"))
+        base = commit_all(self.directory, "fusion de la PR plex")
+        code, output = verify_with(base=base)
+        self.assertEqual(1, code)
+        self.assertIn("plugin plex %s : packages/plex/%s/%s.zip absent de v2099.11.07, le lien répondrait 404." % (version, version, version), output)
+        self.assertTrue(store.pinned_url_change(store.download_url("v2099.11.07", "plex", version), store.download_url("v2099.11.08", "plex", version)))
+        code, output = run(store.command_release_prep, tag="v2099.11.08", ref=None)
+        self.assertEqual(0, code, output)
+        self.assertIn("1 lien(s) visant un tag qui n'a jamais servi l'archive réépinglé(s) à v2099.11.08", output)
+        after = index_entries()
+        self.assertEqual(store.download_url("v2099.11.08", "plex", version), after[("plugins", "plex", version)]["downloadUrl"])
+        self.assertEqual(before, {key: entry for key, entry in after.items() if key in before})
+        code, output = verify_with(base=base)
+        self.assertEqual(0, code, output)
+        self.assertEqual(released, git(self.directory, "rev-parse", "refs/tags/v2099.11.07"))
 
     def test_link_to_a_missing_tag_other_than_the_released_one_is_rejected(self) -> None:
         init_git(self.directory)

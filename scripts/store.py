@@ -104,9 +104,13 @@ def tag_exists(tag: str) -> bool:
     return git("rev-parse", "-q", "--verify", "refs/tags/%s^{commit}" % tag).returncode == 0
 
 
-def unreleased_tag(ref: str) -> bool:
-    """Tag d'instantané pas encore créé : un lien vers lui n'a jamais répondu, il peut donc encore être réépinglé."""
-    return RELEASE_TAG.match(ref) is not None and not tag_exists(ref)
+def never_served(ref: str, path: str) -> bool:
+    """Lien vers un tag d'instantané qui n'a jamais servi l'archive : tag pas encore créé, OU tag créé sans elle (version
+    construite le jour D, instantané vD préparé sans elle, fusionnée ensuite). Le lien n'a jamais répondu que 404 : aucun
+    moteur n'a pu s'en servir, il peut donc encore être réépinglé. Un tag n'est jamais déplacé pour le réparer."""
+    if RELEASE_TAG.match(ref) is None:
+        return False
+    return not tag_exists(ref) or git_blob("refs/tags/" + ref, path) is None
 
 
 def next_snapshot_ref() -> str:
@@ -118,14 +122,16 @@ def next_snapshot_ref() -> str:
 
 
 def repin_unreleased(index: Json, tag: str) -> int:
-    """Épingle au tag de l'instantané les liens qui visent un autre tag jamais créé (versions construites avant release-prep).
-    Ces liens n'ont jamais répondu : aucun moteur n'a pu s'en servir. Retourne le nombre de liens réépinglés."""
+    """Épingle au tag de l'instantané les liens qui visent un autre tag n'ayant jamais servi leur archive (tag jamais créé,
+    ou créé sans l'archive : versions construites avant release-prep). Ces liens n'ont jamais répondu : aucun moteur n'a pu
+    s'en servir. Retourne le nombre de liens réépinglés."""
     count = 0
     for kind in ("plugins", "tools"):
         for item in index.get(kind, []):
             for entry in item["versions"]:
                 ref = url_ref(item["id"], entry["version"], entry["downloadUrl"])
-                if ref is not None and ref != tag and unreleased_tag(ref):
+                path = "packages/%s/%s/%s.zip" % (item["id"], entry["version"], entry["version"])
+                if ref is not None and ref != tag and never_served(ref, path):
                     entry["downloadUrl"] = download_url(tag, item["id"], entry["version"])
                     count += 1
     return count
@@ -384,7 +390,7 @@ def command_release_prep(args: argparse.Namespace) -> int:
         repinned = repin_unreleased(index, tag)
         if repinned:
             write_index(index)
-            print("%d lien(s) visant un tag jamais créé réépinglé(s) à %s." % (repinned, tag))
+            print("%d lien(s) visant un tag qui n'a jamais servi l'archive réépinglé(s) à %s." % (repinned, tag))
     # Contrôle complet avant d'écrire le journal : un échec laisse le CHANGELOG intact et la commande peut être relancée.
     print("Contrôle du catalogue%s :" % (" (immuabilité depuis %s)" % since if since else ""))
     if command_verify(argparse.Namespace(base=since, release_tag=tag, online=False)) != 0:
@@ -566,7 +572,9 @@ def check_pinned_links(links: list[Link], release_tag: str | None, problems: Pro
                 continue
         data = git_blob(revision, link.path)
         if data is None:
-            problems.append("%s : %s absent de %s, le lien répondrait 404." % (link.label, link.path, link.ref))
+            problems.append("%s : %s absent de %s, le lien répondrait 404.%s" % (link.label, link.path, link.ref, (
+                " Ne déplacez pas le tag : release-prep réalignera ce lien sur le tag du prochain instantané."
+                if revision.startswith("refs/tags/") else "")))
         elif sha256(data) != link.sha256:
             problems.append("%s : l'archive servie par %s diffère du sha256 de repository.json." % (link.label, link.ref))
     for tag, count in sorted(pending.items()):
@@ -616,7 +624,8 @@ def check_online(links: list[Link], pending: set[str], problems: Problems, notes
 
 def pinned_url_change(old: str, new: str) -> bool:
     """Évolutions admises du lien d'une version de la base, même chemin : de main vers un SHA de commit (épinglage), ou d'un tag
-    jamais créé vers un autre tag (le lien n'a jamais répondu ; release-prep l'aligne sur le tag de l'instantané). Jamais l'inverse."""
+    qui n'a jamais servi l'archive (tag jamais créé, ou créé sans elle) vers un autre tag (le lien n'a jamais répondu ;
+    release-prep l'aligne sur le tag de l'instantané). Jamais l'inverse."""
     pattern = re.escape(DOWNLOAD_BASE) + "/" + DOWNLOAD_REF + "/(.+)"
     old_match, new_match = re.fullmatch(pattern, old), re.fullmatch(pattern, new)
     if old_match is None or new_match is None or old_match.group(2) != new_match.group(2):
@@ -624,7 +633,7 @@ def pinned_url_change(old: str, new: str) -> bool:
     old_ref, new_ref = old_match.group(1), new_match.group(1)
     if old_ref == "main":
         return COMMIT_SHA.match(new_ref) is not None
-    return RELEASE_TAG.match(new_ref) is not None and unreleased_tag(old_ref)
+    return RELEASE_TAG.match(new_ref) is not None and never_served(old_ref, old_match.group(2))
 
 
 def check_published_entries(old_index: Json, new_index: Json, base: str, problems: Problems) -> None:
