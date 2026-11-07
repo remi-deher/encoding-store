@@ -458,6 +458,23 @@ class ReleasePrepTests(unittest.TestCase):
         notes = store.section_body(read_changelog(), "## v2099.02.01")
         self.assertEqual("### Paquets de l'instantané\n\nNouvelles versions depuis v2099.01.01 :\n\n- plugin plex %s" % version, notes)
 
+    def test_closer_stray_tag_does_not_hide_the_previous_snapshot(self) -> None:
+        # Un tag hors convention plus proche (v1.0) ne doit pas faire perdre l'instantané précédent, donc le --base.
+        directory = self.directory
+        init_git(directory)
+        run(store.command_release_prep, tag="v2099.01.01", ref="main")
+        commit_all(directory, "instantané")
+        git(directory, "tag", "v2099.01.01")
+        git(directory, "commit", "-q", "--allow-empty", "-m", "autre chose")
+        git(directory, "tag", "v1.0")
+        git(directory, "tag", "v2099.1.2")
+        self.assertEqual("v2099.01.01", store.previous_tag())
+        version = bump_patch(directory, "plex/manifests/plex.json")
+        code, output = run(store.command_release_prep, tag="v2099.02.01", ref="main")
+        self.assertEqual(0, code, output)
+        self.assertIn("immuabilité depuis v2099.01.01", output)
+        self.assertIn("Nouvelles versions depuis v2099.01.01 :\n\n- plugin plex %s" % version, read_changelog())
+
     def test_nothing_to_publish_is_refused(self) -> None:
         directory = self.directory
         init_git(directory)

@@ -41,6 +41,8 @@ SEMVER = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 MAX_UNCOMPRESSED = 512 * 1024 * 1024
 S_IFMT, S_IFLNK = 0o170000, 0o120000
 RELEASE_TAG = re.compile(r"^v([0-9]{4})\.([0-9]{2})\.([0-9]{2})$")
+# Même motif pour git describe --match (glob) : un tag parasite plus proche (v1.0, v2-test) ne doit pas masquer l'instantané précédent.
+RELEASE_TAG_GLOB = "v[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]"
 UNRELEASED = "## Non publié"
 
 
@@ -240,7 +242,7 @@ def check_tag(tag: str) -> None:
 
 def previous_tag(rev: str = "HEAD") -> str | None:
     """Dernier tag d'instantané atteignable depuis rev (rev exclu s'il est lui-même tagué : passer rev^)."""
-    result = git("describe", "--tags", "--abbrev=0", "--match", "v[0-9]*", rev)
+    result = git("describe", "--tags", "--abbrev=0", "--match", RELEASE_TAG_GLOB, rev)
     tag = result.stdout.strip()
     return tag if result.returncode == 0 and RELEASE_TAG.match(tag) else None
 
