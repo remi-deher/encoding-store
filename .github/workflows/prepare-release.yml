@@ -1,7 +1,7 @@
 name: Prepare release
 
 # Prépare un instantané du catalogue, sans rien publier ni taguer :
-#   construit les archives en attente (build --all-pending, environnement épinglé), contrôle le catalogue,
+#   construit les archives en attente (build --all-pending, liens épinglés au tag de l'instantané), contrôle le catalogue,
 #   crée la section « ## vAAAA.MM.JJ » de CHANGELOG.md, pousse la branche release/vAAAA.MM.JJ et ouvre une PR
 #   vers la branche depuis laquelle le workflow a été lancé (dev ou main).
 # La publication reste une décision humaine : fusionner la PR (jusqu'à main), puis lancer le workflow « Release ».
@@ -75,6 +75,8 @@ jobs:
             echo "Instantané préparé par le workflow « Prepare release » (run $GITHUB_RUN_ID) : archives en attente construites, catalogue contrôlé, section du CHANGELOG."
             echo
             echo "**Rien n'est publié.** Après fusion jusqu'à \`main\` : Actions > Release > Run workflow sur \`main\`, tag \`$TAG\`."
+            echo
+            echo "Les nouvelles versions sont servies depuis le tag \`$TAG\` : leurs liens répondront dès que la release portera ce tag exact."
             echo
             echo "## $TAG"
             echo

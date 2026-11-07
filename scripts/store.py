@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """Outils du dépôt Encoding Store : construction reproductible des paquets de plugins et contrôle du catalogue.
 
-    python3 scripts/store.py verify [--base REF]     contrôle complet (CI) ; --base REF refuse toute modification d'un paquet déjà publié
-    python3 scripts/store.py build <id> [--ref REF]  construit packages/<id>/<version>/<version>.zip depuis plugins/ et l'ajoute à repository.json
+    python3 scripts/store.py verify [--base REF] [--release-tag TAG] [--online]
+                                                      contrôle complet (CI) ; --base REF refuse toute modification d'un paquet déjà publié ;
+                                                      --online télécharge chaque downloadUrl et compare son SHA-256 à l'index
+    python3 scripts/store.py build <id> [--ref REF]  construit packages/<id>/<version>/<version>.zip depuis plugins/ et l'ajoute à repository.json ;
+                                                      downloadUrl épinglé au tag vAAAA.MM.JJ du jour (défaut) ou à REF
     python3 scripts/store.py build --all-pending      construit tous les plugins dont la version des sources n'a pas d'archive
     python3 scripts/store.py pending                  liste ces plugins (rien n'est écrit)
     python3 scripts/store.py release-prep [--tag vAAAA.MM.JJ]
-                                                      prépare un instantané : build --all-pending, verify, section du CHANGELOG
+                                                      prépare un instantané : build --all-pending (liens épinglés au tag), verify,
+                                                      section du CHANGELOG
     python3 scripts/store.py changelog <tag>          affiche la section du CHANGELOG d'un instantané (notes de release)
     python3 scripts/store.py show <id> [version]     affiche le manifeste interne (plugin.json ou tool.json) d'une archive publiée, indenté
     python3 scripts/store.py sync-index              recopie nom, résumé, catégorie et outils requis de plugins/packages.json vers repository.json
@@ -25,8 +29,12 @@ import os
 import re
 import subprocess
 import sys
+import time
+import urllib.error
+import urllib.request
 import zipfile
-from typing import Any, Callable
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Callable, NamedTuple
 
 Json = Any
 Problems = list[str]
@@ -41,7 +49,13 @@ SEMVER = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 MAX_UNCOMPRESSED = 512 * 1024 * 1024
 S_IFMT, S_IFLNK = 0o170000, 0o120000
 RELEASE_TAG = re.compile(r"^v([0-9]{4})\.([0-9]{2})\.([0-9]{2})$")
+COMMIT_SHA = re.compile(r"^[0-9a-f]{40}$")
+# Refs admises dans downloadUrl : main (liens historiques), SHA de commit ou tag d'instantané. Rien d'autre, donc ni « .. » ni branche.
+DOWNLOAD_REF = r"(main|[0-9a-f]{40}|v[0-9]{4}\.[0-9]{2}\.[0-9]{2})"
 UNRELEASED = "## Non publié"
+MAX_DOWNLOAD = 256 * 1024 * 1024
+DOWNLOAD_ATTEMPTS = 4
+RETRY_DELAY = 5.0  # secondes, multipliées par le numéro de tentative
 
 
 def semver_key(version: str) -> tuple[int, ...]:
@@ -67,6 +81,54 @@ def archive_path(package_id: str, version: str) -> str:
 
 def download_url(ref: str, package_id: str, version: str) -> str:
     return "%s/%s/packages/%s/%s/%s.zip" % (DOWNLOAD_BASE, ref, package_id, version, version)
+
+
+def url_ref(package_id: str, version: str, url: str) -> str | None:
+    """Ref servie par un downloadUrl conforme au contrat du dépôt (même chemin que l'archive), ou None."""
+    match = re.fullmatch(re.escape(DOWNLOAD_BASE) + "/" + DOWNLOAD_REF + r"/packages/%s/%s/%s\.zip"
+                         % (re.escape(package_id), re.escape(version), re.escape(version)), url)
+    return match.group(1) if match else None
+
+
+def check_ref(ref: str) -> None:
+    """Refuse avant toute écriture une ref que verify rejetterait."""
+    if ref == "main" or COMMIT_SHA.match(ref):
+        return
+    if RELEASE_TAG.match(ref):
+        check_tag(ref)
+        return
+    sys.exit("Ref invalide %r : tag vAAAA.MM.JJ, SHA de commit (40 caractères) ou main." % ref)
+
+
+def tag_exists(tag: str) -> bool:
+    return git("rev-parse", "-q", "--verify", "refs/tags/%s^{commit}" % tag).returncode == 0
+
+
+def unreleased_tag(ref: str) -> bool:
+    """Tag d'instantané pas encore créé : un lien vers lui n'a jamais répondu, il peut donc encore être réépinglé."""
+    return RELEASE_TAG.match(ref) is not None and not tag_exists(ref)
+
+
+def next_snapshot_ref() -> str:
+    """Ref par défaut d'une nouvelle version : le tag de l'instantané du jour, que release-prep alignera sur son propre tag."""
+    tag = default_tag()
+    if tag_exists(tag):
+        sys.exit("Le tag %s existe déjà : passez --ref vAAAA.MM.JJ (date du prochain instantané)." % tag)
+    return tag
+
+
+def repin_unreleased(index: Json, tag: str) -> int:
+    """Épingle au tag de l'instantané les liens qui visent un autre tag jamais créé (versions construites avant release-prep).
+    Ces liens n'ont jamais répondu : aucun moteur n'a pu s'en servir. Retourne le nombre de liens réépinglés."""
+    count = 0
+    for kind in ("plugins", "tools"):
+        for item in index.get(kind, []):
+            for entry in item["versions"]:
+                ref = url_ref(item["id"], entry["version"], entry["downloadUrl"])
+                if ref is not None and ref != tag and unreleased_tag(ref):
+                    entry["downloadUrl"] = download_url(tag, item["id"], entry["version"])
+                    count += 1
+    return count
 
 
 def load_validator(name: str) -> Callable[[Json], Json]:
@@ -184,6 +246,7 @@ def build_plugin(index: Json, spec: Json, package_id: str, ref: str) -> tuple[st
 
 def build_pending(ref: str) -> list[tuple[str, str]]:
     """Construit chaque plugin en attente ; idempotent (rien à faire = rien d'écrit). Retourne les (id, version) construits."""
+    check_ref(ref)
     index, spec = read_json(INDEX_PATH), read_json(SPEC_PATH)
     built = []
     for package_id, _version in pending_plugins(index, spec):
@@ -196,16 +259,20 @@ def build_pending(ref: str) -> list[tuple[str, str]]:
 
 
 def command_build(args: argparse.Namespace) -> int:
+    ref = args.ref or next_snapshot_ref()
+    check_ref(ref)
+    if ref == "main":
+        print("Note : downloadUrl suivra main, qui peut bouger ; sans --ref, le lien est épinglé au tag de l'instantané.", file=sys.stderr)
     if getattr(args, "all_pending", False):
         if args.id:
             sys.exit("build : donnez un identifiant ou --all-pending, pas les deux.")
-        if not build_pending(args.ref):
+        if not build_pending(ref):
             print("Aucun plugin en attente de publication.")
         return 0
     if not args.id:
         sys.exit("build : identifiant de plugin ou --all-pending requis.")
     index, spec = read_json(INDEX_PATH), read_json(SPEC_PATH)
-    version, digest = build_plugin(index, spec, args.id, args.ref)
+    version, digest = build_plugin(index, spec, args.id, ref)
     write_index(index)
     print("%s %s construit (%s)." % (args.id, version, digest))
     return 0
@@ -307,11 +374,20 @@ def command_release_prep(args: argparse.Namespace) -> int:
         changelog = handle.read()
     if changelog_section(changelog, "## " + tag) is not None:
         sys.exit("CHANGELOG.md contient déjà la section %s : instantané déjà préparé." % tag)
+    # Par défaut, les nouvelles versions sont servies depuis le tag de l'instantané : un lien qui ne bouge plus quand main bouge.
+    ref = args.ref or tag
+    check_ref(ref)
     since = previous_tag()
-    built = build_pending(args.ref)
+    built = build_pending(ref)
+    if ref == tag:
+        index = read_json(INDEX_PATH)
+        repinned = repin_unreleased(index, tag)
+        if repinned:
+            write_index(index)
+            print("%d lien(s) visant un tag jamais créé réépinglé(s) à %s." % (repinned, tag))
     # Contrôle complet avant d'écrire le journal : un échec laisse le CHANGELOG intact et la commande peut être relancée.
     print("Contrôle du catalogue%s :" % (" (immuabilité depuis %s)" % since if since else ""))
-    if command_verify(argparse.Namespace(base=since)) != 0:
+    if command_verify(argparse.Namespace(base=since, release_tag=tag, online=False)) != 0:
         print("Préparation interrompue : corrigez les erreurs puis relancez release-prep (les archives déjà construites sont conservées).")
         return 1
     snapshot, count = snapshot_lines(since)
@@ -321,7 +397,9 @@ def command_release_prep(args: argparse.Namespace) -> int:
         handle.write(release_changelog(changelog, tag, snapshot))
     print("CHANGELOG.md : section %s créée." % tag)
     print("Instantané %s prêt%s. Étapes suivantes (humaines) : commit, PR, fusion dans main, puis workflow « Release » avec tag=%s."
-          % (tag, " (%d archive(s) construite(s))" % len(built) if built else "", tag))
+          % (tag, " (%d archive(s) construite(s), liens épinglés à %s)" % (len(built), ref) if built else "", tag))
+    if built and ref == tag:
+        print("Les nouveaux liens répondront dès que le tag %s existera : publiez la release avec ce tag exact." % tag)
     return 0
 
 
@@ -380,8 +458,17 @@ def check_versions(kind: str, item: Json, problems: Problems) -> None:
         problems.append("%s : latestVersion %s n'est pas la plus récente (%s)." % (label, item["latestVersion"], max(numbers, key=semver_key)))
 
 
+class Link(NamedTuple):
+    """Lien de téléchargement d'une version, tel que l'index le publie."""
+    label: str
+    url: str
+    ref: str
+    path: str  # chemin de l'archive dans le dépôt, séparateur /
+    sha256: str
+
+
 def check_archives(kind: str, item: Json, validate_manifest: Callable[[Json], Json], problems: Problems,
-                   published: set[str]) -> dict[str, dict[str, bytes]]:
+                   published: set[str], links: list[Link]) -> dict[str, dict[str, bytes]]:
     """Contrôle chaque archive listée : fichier, SHA-256, URL, manifeste interne. Retourne {version: {nom: octets}}."""
     contents: dict[str, dict[str, bytes]] = {}
     for entry in item["versions"]:
@@ -389,6 +476,12 @@ def check_archives(kind: str, item: Json, validate_manifest: Callable[[Json], Js
         label = "%s %s %s" % (kind, item["id"], version)
         path = archive_path(item["id"], version)
         published.add(os.path.relpath(path, ROOT))
+        ref = url_ref(item["id"], version, entry["downloadUrl"])
+        if ref is None:
+            problems.append("%s : URL de téléchargement inattendue (%s) ; attendu %s/<vAAAA.MM.JJ|SHA de commit|main>/packages/%s/%s/%s.zip."
+                            % (label, entry["downloadUrl"], DOWNLOAD_BASE, item["id"], version, version))
+        else:
+            links.append(Link(label, entry["downloadUrl"], ref, "packages/%s/%s/%s.zip" % (item["id"], version, version), entry["sha256"]))
         if not os.path.isfile(path):
             problems.append("%s : archive absente." % label)
             continue
@@ -396,8 +489,6 @@ def check_archives(kind: str, item: Json, validate_manifest: Callable[[Json], Js
             data = handle.read()
         if sha256(data) != entry["sha256"]:
             problems.append("%s : SHA-256 différent de repository.json." % label)
-        if not re.fullmatch(re.escape(DOWNLOAD_BASE) + r"/[A-Za-z0-9._/-]+/packages/%s/%s/%s\.zip" % (re.escape(item["id"]), re.escape(version), re.escape(version)), entry["downloadUrl"]):
-            problems.append("%s : URL de téléchargement inattendue (%s)." % (label, entry["downloadUrl"]))
         try:
             archive = zipfile.ZipFile(io.BytesIO(data))
         except zipfile.BadZipFile:
@@ -443,11 +534,97 @@ def git(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=False)
 
 
+def git_blob(revision: str, path: str) -> bytes | None:
+    result = subprocess.run(["git", "cat-file", "blob", "%s:%s" % (revision, path)], cwd=ROOT, capture_output=True, check=False)
+    return result.stdout if result.returncode == 0 else None
+
+
+# --- liens de téléchargement ------------------------------------------------------------------------------------
+
+def check_pinned_links(links: list[Link], release_tag: str | None, problems: Problems, notes: list[str]) -> set[str]:
+    """Hors ligne : chaque lien épinglé (tag ou commit) sert, d'après git, exactement l'archive de l'index.
+
+    Un tag qui n'existe pas encore est admis (instantané préparé, pas encore publié) ; avec release_tag, seul ce tag peut
+    manquer : un lien vers tout autre tag absent ne répondrait jamais. Retourne les tags en attente."""
+    pending: dict[str, int] = {}
+    for link in links:
+        if link.ref == "main":
+            continue
+        if RELEASE_TAG.match(link.ref):
+            revision = "refs/tags/" + link.ref
+            if not tag_exists(link.ref):
+                if release_tag is not None and link.ref != release_tag:
+                    problems.append("%s : lien épinglé au tag %s, qui n'existe pas et n'est pas le tag publié (%s) : il ne répondrait jamais."
+                                    % (link.label, link.ref, release_tag))
+                else:
+                    pending[link.ref] = pending.get(link.ref, 0) + 1
+                continue
+        else:
+            revision = link.ref
+            if git("cat-file", "-e", revision + "^{commit}").returncode != 0:
+                problems.append("%s : lien épinglé au commit %s, absent du dépôt." % (link.label, link.ref))
+                continue
+        data = git_blob(revision, link.path)
+        if data is None:
+            problems.append("%s : %s absent de %s, le lien répondrait 404." % (link.label, link.path, link.ref))
+        elif sha256(data) != link.sha256:
+            problems.append("%s : l'archive servie par %s diffère du sha256 de repository.json." % (link.label, link.ref))
+    for tag, count in sorted(pending.items()):
+        notes.append("%d lien(s) épinglé(s) au tag %s, pas encore créé : ils répondront une fois la release %s publiée." % (count, tag, tag))
+    return set(pending)
+
+
+def fetch_url(url: str) -> bytes:
+    request = urllib.request.Request(url, headers={"User-Agent": "encoding-store-verify"})
+    with urllib.request.urlopen(request, timeout=60) as response:  # URL validée par url_ref : https, ce dépôt
+        data: bytes = response.read(MAX_DOWNLOAD + 1)
+    if len(data) > MAX_DOWNLOAD:
+        raise ValueError("réponse de plus de %d Mio" % (MAX_DOWNLOAD // (1024 * 1024)))
+    return data
+
+
+def probe_link(link: Link) -> str | None:
+    """Télécharge le lien et compare son SHA-256 à l'index. Retourne le problème, ou None. Réessaie les erreurs transitoires."""
+    error = ""
+    for attempt in range(1, DOWNLOAD_ATTEMPTS + 1):
+        try:
+            data = fetch_url(link.url)
+        except urllib.error.HTTPError as failure:
+            if failure.code < 500 and failure.code != 429:
+                return "%s : le lien répond HTTP %d (%s)." % (link.label, failure.code, link.url)
+            error = "HTTP %d" % failure.code
+        except (urllib.error.URLError, OSError, ValueError) as failure:
+            error = str(failure)
+        else:
+            if sha256(data) != link.sha256:
+                return "%s : le fichier servi par le lien diffère du sha256 de repository.json (%s)." % (link.label, link.url)
+            return None
+        if attempt < DOWNLOAD_ATTEMPTS:
+            time.sleep(RETRY_DELAY * attempt)
+    return "%s : lien injoignable après %d tentatives (%s ; %s)." % (link.label, DOWNLOAD_ATTEMPTS, error, link.url)
+
+
+def check_online(links: list[Link], pending: set[str], problems: Problems, notes: list[str]) -> None:
+    """En ligne : chaque lien répond et sert l'archive de l'index, à l'octet près. Les tags pas encore créés sont sautés."""
+    targets = [link for link in links if link.ref not in pending]
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        failures = [failure for failure in pool.map(probe_link, targets) if failure]
+    problems.extend(failures)
+    notes.append("%d lien(s) téléchargé(s) et comparé(s) à l'index, %d en échec%s." % (
+        len(targets), len(failures), ", %d sauté(s) (tag pas encore créé)" % (len(links) - len(targets)) if len(links) != len(targets) else ""))
+
+
 def pinned_url_change(old: str, new: str) -> bool:
-    """Seule évolution admise d'un lien publié : de la branche main vers un SHA de commit, même chemin (ticket #5)."""
-    prefix = DOWNLOAD_BASE + "/main/"
-    match = re.fullmatch(re.escape(DOWNLOAD_BASE) + r"/[0-9a-f]{40}/(.+)", new)
-    return old.startswith(prefix) and match is not None and match.group(1) == old[len(prefix):]
+    """Évolutions admises du lien d'une version de la base, même chemin : de main vers un SHA de commit (épinglage), ou d'un tag
+    jamais créé vers un autre tag (le lien n'a jamais répondu ; release-prep l'aligne sur le tag de l'instantané). Jamais l'inverse."""
+    pattern = re.escape(DOWNLOAD_BASE) + "/" + DOWNLOAD_REF + "/(.+)"
+    old_match, new_match = re.fullmatch(pattern, old), re.fullmatch(pattern, new)
+    if old_match is None or new_match is None or old_match.group(2) != new_match.group(2):
+        return False
+    old_ref, new_ref = old_match.group(1), new_match.group(1)
+    if old_ref == "main":
+        return COMMIT_SHA.match(new_ref) is not None
+    return RELEASE_TAG.match(new_ref) is not None and unreleased_tag(old_ref)
 
 
 def check_published_entries(old_index: Json, new_index: Json, base: str, problems: Problems) -> None:
@@ -469,7 +646,7 @@ def check_published_entries(old_index: Json, new_index: Json, base: str, problem
                     problems.append("%s : %s modifié dans repository.json, une version publiée est immuable." % (label, key))
 
 
-def check_immutability(base: str, problems: Problems) -> None:
+def check_immutability(base: str, problems: Problems, notes: list[str]) -> None:
     # Point de divergence et non pointe de la base : une branche en retard ne doit pas voir les ajouts de la base comme des suppressions.
     merge_base = git("merge-base", base, "HEAD")
     if merge_base.returncode != 0:
@@ -489,7 +666,15 @@ def check_immutability(base: str, problems: Problems) -> None:
     if old_index.returncode != 0:
         problems.append("repository.json illisible à %s : %s" % (fork, old_index.stderr.strip()))
         return
-    check_published_entries(json.loads(old_index.stdout), read_json(INDEX_PATH), base, problems)
+    old, new = json.loads(old_index.stdout), read_json(INDEX_PATH)
+    check_published_entries(old, new, base, problems)
+    for kind in ("plugins", "tools"):
+        known = {(item["id"], entry["version"]) for item in old.get(kind, []) for entry in item["versions"]}
+        for item in new.get(kind, []):
+            for entry in item["versions"]:
+                if (item["id"], entry["version"]) not in known and url_ref(item["id"], entry["version"], entry["downloadUrl"]) == "main":
+                    notes.append("%s %s %s : nouvelle version servie depuis main, qui peut bouger ; sans --ref, build l'épingle à un tag."
+                                 % (kind[:-1], item["id"], entry["version"]))
 
 
 def command_verify(args: argparse.Namespace) -> int:
@@ -501,24 +686,34 @@ def command_verify(args: argparse.Namespace) -> int:
         problems.append("repository.json non conforme au schéma (%s)." % error)
     categories = {category["id"] for category in index["categories"]}
     published: set[str] = set()
+    links: list[Link] = []
+    notes: list[str] = []
     contents: dict[str, dict[str, dict[str, bytes]]] = {}
     plugin_validator, tool_validator = load_validator("plugin-package.schema.json"), load_validator("tool-package.schema.json")
     for plugin in index["plugins"]:
         if plugin["category"] not in categories:
             problems.append("plugin %s : catégorie inconnue %s." % (plugin["id"], plugin["category"]))
         check_versions("plugin", plugin, problems)
-        contents[plugin["id"]] = check_archives("plugin", plugin, plugin_validator, problems, published)
+        contents[plugin["id"]] = check_archives("plugin", plugin, plugin_validator, problems, published, links)
     for tool in index["tools"]:
         check_versions("outil", tool, problems)
-        check_archives("tool", tool, tool_validator, problems, published)
+        check_archives("tool", tool, tool_validator, problems, published, links)
     check_plugin_sources(index, spec, contents, problems)
     on_disk = {os.path.relpath(path, ROOT) for path in glob.glob(os.path.join(ROOT, "packages", "**", "*"), recursive=True)
                if not os.path.isdir(path)}
     for orphan in sorted(on_disk - published):
         problems.append("%s : archive absente de repository.json." % orphan)
     check_licenses(problems)
+    release_tag = getattr(args, "release_tag", None)
+    if release_tag:
+        check_tag(release_tag)
+    pending = check_pinned_links(links, release_tag, problems, notes)
     if args.base:
-        check_immutability(args.base, problems)
+        check_immutability(args.base, problems, notes)
+    if getattr(args, "online", False):
+        check_online(links, pending, problems, notes)
+    for note in notes:
+        print("NOTE", note)
     for problem in problems:
         print("ERREUR", problem)
     print("%d erreur(s)." % len(problems) if problems else "Catalogue valide.")
@@ -581,16 +776,18 @@ def main(argv: list[str]) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     verify = commands.add_parser("verify")
     verify.add_argument("--base", help="référence git de comparaison : les paquets déjà publiés ne doivent pas changer")
+    verify.add_argument("--release-tag", help="tag vAAAA.MM.JJ en cours de publication : seul tag encore absent admis dans les liens")
+    verify.add_argument("--online", action="store_true", help="télécharge chaque downloadUrl et compare son SHA-256 à l'index")
     verify.set_defaults(handler=command_verify)
     build = commands.add_parser("build")
     build.add_argument("id", nargs="?")
     build.add_argument("--all-pending", action="store_true", help="construit tous les plugins dont la version des sources n'a pas d'archive")
-    build.add_argument("--ref", default="main", help="branche, tag ou commit servi dans downloadUrl (défaut : main)")
+    build.add_argument("--ref", help="tag vAAAA.MM.JJ, SHA de commit ou main, servi dans downloadUrl (défaut : tag vAAAA.MM.JJ du jour, UTC)")
     build.set_defaults(handler=command_build)
     commands.add_parser("pending").set_defaults(handler=command_pending)
     prep = commands.add_parser("release-prep")
     prep.add_argument("--tag", help="vAAAA.MM.JJ (défaut : date du jour, UTC)")
-    prep.add_argument("--ref", default="main", help="ref servie dans downloadUrl des archives construites (défaut : main)")
+    prep.add_argument("--ref", help="ref servie dans downloadUrl des archives construites (défaut : le tag de l'instantané)")
     prep.set_defaults(handler=command_release_prep)
     changelog = commands.add_parser("changelog")
     changelog.add_argument("tag")
