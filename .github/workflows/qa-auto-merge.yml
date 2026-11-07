@@ -1,0 +1,68 @@
+name: QA Auto-Merge
+
+# Ce workflow permet à l'agent QA de fusionner automatiquement les PR
+# quand tous les checks sont verts et qu'il n'y a pas de conflits.
+
+on:
+  # Déclenchement manuel (pour l'agent QA)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Mode simulation (ne fusionne pas vraiment)'
+        required: false
+        type: boolean
+        default: false
+
+  # Déclenchement après réussite des checks principaux
+  workflow_run:
+    workflows:
+      - 'CI'
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  actions: read
+
+concurrency:
+  group: qa-auto-merge-${{ github.event_name }}
+  cancel-in-progress: false
+
+jobs:
+  qa-auto-merge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      
+      - name: Install GitHub CLI
+        run: |
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y gh
+      
+      - name: Authentifier GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GH_TOKEN" | gh auth login --with-token
+      
+      - name: Exécuter QA Auto-Merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run || false }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          node .github/scripts/qa-auto-merge.mjs
