@@ -1,0 +1,29 @@
+name: Download links
+
+# Contrôle en ligne des liens servis aux moteurs : chaque downloadUrl de repository.json répond et sert exactement
+# l'archive dont l'index publie le SHA-256. Lecture seule. La planification hebdomadaire contrôle la branche par défaut ;
+# le lancement manuel contrôle la branche choisie (main, une fois l'outillage porté sur main).
+# Les liens épinglés à un tag pas encore créé (instantané préparé, pas publié) sont signalés et sautés, sauf si ce tag est
+# daté de plus de 7 jours (--max-pending-days) : release oubliée, le job échoue.
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - run: pip install --require-hashes -r requirements/release.txt
+      - name: Liens de téléchargement
+        run: python3 scripts/store.py verify --online

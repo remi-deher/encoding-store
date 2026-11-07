@@ -33,7 +33,25 @@ python3 -m unittest discover -s plugins/tests -v
 3. Décrire le changement sous « Non publié » dans `CHANGELOG.md`.
 4. Construire les archives : soit `python3 scripts/store.py build --all-pending` dans la PR, soit laisser le workflow **Prepare release** le faire (étape suivante). `python3 scripts/store.py pending` liste ce qui attend une archive ; la CI l'affiche aussi dans le résumé du job.
 
-`build <id>` construit un seul plugin. `build --ref <ref>` fait pointer `downloadUrl` vers un tag ou un commit plutôt que `main`.
+`build <id>` construit un seul plugin.
+
+### Liens de téléchargement
+
+Chaque nouvelle version est servie depuis un **tag d'instantané** et non depuis `main` : `https://raw.githubusercontent.com/remi-deher/encoding-store/vAAAA.MM.JJ/packages/<id>/<version>/<version>.zip`. Un déplacement ou une réécriture de `main` ne peut donc ni modifier ni casser un lien publié.
+
+**Écart avec l'audit (H4).** L'audit (`docs/audit-fiabilite.md`, H4) recommande d'épingler chaque lien au **SHA du commit** qui introduit l'archive : un SHA est immuable par construction. Ce dépôt épingle à un **tag** : le lien est lisible, regroupe les versions d'un même instantané et reste celui de la release attestée. En contrepartie, un tag git est **mutable** : `git tag -f` puis `git push --force` (ou une suppression puis recréation) changerait ce que sert un lien publié, sans que le SHA-256 de l'index ne change. Les contrôles du dépôt (`verify`, Release, Download links) détecteraient l'écart après coup, pas avant que des moteurs ne l'aient vu (ils le refuseraient néanmoins grâce au SHA-256). D'où le prérequis suivant.
+
+**Prérequis avant la première release épinglée à un tag : protéger les tags `v*`.** Le propriétaire du dépôt crée, dans *Settings > Rules > Rulesets*, un ruleset de **tags** ciblant `v*`, actif, sans contournement, avec *Restrict updates* et *Restrict deletions* (la création reste permise au workflow Release). Tant que ce ruleset n'existe pas, ne pas lancer **Release** sur un instantané dont des liens visent son tag. Ne jamais déplacer ni supprimer un tag publié : un lien qui vise un tag sans son archive se répare par `release-prep` (réalignement sur le tag suivant), pas par le tag.
+
+**Ordre de publication : le tag avant l'index que lisent les moteurs.** Tant que le tag d'un lien n'existe pas, le moteur (encoding-central) obtient un 404 et refuse proprement l'installation. Le tag doit donc être publié avant que l'entrée d'index qui le référence n'atteigne la branche lue par les moteurs (`main`). Le workflow Release ne tague qu'un commit de `main` : il reste une fenêtre entre la fusion dans `main` et la release. Procédure : fusionner la PR `dev` → `main` **uniquement quand on peut lancer Release dans la foulée**, et le lancer immédiatement. Contrôles :
+- dans GitHub Actions, `verify` annote la PR et le commit (`::warning`) pour chaque tag pas encore publié que vise `repository.json` : la PR `dev` → `main` affiche donc la release à lancer ;
+- `verify --online` (Release, Download links hebdomadaire) échoue si un tag en attente est daté de plus de 7 jours (`--max-pending-days N`) : une release oubliée ne laisse plus de 404 silencieux. Le tag de la release en cours (`--release-tag`) est exclu.
+
+- `build` épingle par défaut au tag du jour (UTC) ; `release-prep` réaligne ensuite sur son propre tag tout lien qui vise un tag n'ayant jamais servi son archive : tag jamais créé, ou créé sans elle (version construite le jour D, instantané vD préparé sans elle, fusionnée ensuite). Un tel lien n'a jamais répondu, aucun moteur n'a pu s'en servir : c'est le seul changement de lien admis avec l'épinglage `main` vers un SHA de commit. Un lien vers un tag qui sert déjà l'archive est immuable, et un tag publié ne se déplace jamais (pas de `git tag -f`). Pour un `release-prep` local, récupérer d'abord les tags (`git fetch --tags`).
+- `build --ref <ref>` choisit la ref : tag `vAAAA.MM.JJ`, SHA de commit (40 caractères) ou `main` (déconseillé, `verify --base` le signale). Toute autre ref, `..` compris, est refusée par `build` comme par `verify`.
+- Un lien épinglé répond dès que la release qui porte son tag est publiée : fusionner jusqu'à `main`, puis lancer **Release** sans attendre, avec le tag exact de la PR d'instantané (le workflow refuse tout lien vers un autre tag absent).
+- `verify` contrôle hors ligne, par git, que chaque lien épinglé sert exactement l'archive de l'index (tag ou commit existant). `verify --online` télécharge chaque lien et compare son SHA-256 à l'index ; les liens vers un tag pas encore créé sont signalés et sautés, sauf si ce tag est daté de plus de 7 jours (`--max-pending-days`) : release oubliée, erreur.
+- Les 52 versions publiées avant ce changement gardent leur lien `main`, inchangé : les repointer serait une décision du mainteneur, à documenter (l'audit `docs/audit-fiabilite.md`, H4, décrit l'épinglage par SHA du commit d'introduction, que `verify --base` admet déjà).
 
 Changer le résumé, la catégorie ou le nom : éditer `plugins/packages.json` puis `python3 scripts/store.py sync-index`.
 
@@ -50,7 +68,7 @@ GitHub : **Actions > Prepare release > Run workflow**, sur `dev` (ou `main`), ch
 Le workflow, avec l'environnement épinglé de la CI :
 
 1. construit toutes les archives en attente (`build --all-pending`) : seules de **nouvelles** versions sont ajoutées, aucune archive existante n'est touchée ;
-2. rejoue `verify --base <tag précédent>` (catalogue et immuabilité depuis le dernier instantané) ; en cas d'échec, rien n'est poussé ;
+2. épingle au tag de l'instantané les liens des nouvelles versions, puis rejoue `verify --base <tag précédent> --release-tag <tag>` (catalogue, immuabilité depuis le dernier instantané, liens) ; en cas d'échec, rien n'est poussé ;
 3. renomme « Non publié » de `CHANGELOG.md` en `## vAAAA.MM.JJ`, y ajoute la liste des versions de paquets nouvelles depuis le tag précédent, et rouvre une section « Non publié » vide ;
 4. rejoue les tests du Store, pousse la branche `release/vAAAA.MM.JJ`, ouvre une PR vers la branche de lancement et y lance la CI.
 
@@ -66,16 +84,18 @@ Si la PR n'est pas créée (réglage *Settings > Actions > General > Allow GitHu
 
 ### 2. Relire et fusionner jusqu'à `main`
 
-La PR `release/vAAAA.MM.JJ` contient les archives, `repository.json` et le CHANGELOG. Une fois la CI verte, la fusionner, puis porter `dev` dans `main` par la PR habituelle.
+La PR `release/vAAAA.MM.JJ` contient les archives, `repository.json` et le CHANGELOG. Une fois la CI verte, la fusionner, puis porter `dev` dans `main` par la PR habituelle, **au moment où l'on peut lancer l'étape 3 aussitôt** : entre les deux, les moteurs qui lisent `main` obtiennent un 404 pour les nouvelles versions. Avant la toute première release épinglée à un tag, vérifier que le ruleset de tags `v*` existe (voir « Liens de téléchargement »).
 
 ### 3. Publier : workflow « Release »
 
 GitHub : **Actions > Release > Run workflow**, **sur `main`**, tag `vAAAA.MM.JJ`. Pousser soi-même le tag sur un commit de `main` déclenche le même workflow.
 
-Le workflow refuse un tag mal formé ou déjà existant, un commit absent de `main`, et un tag sans section dans `CHANGELOG.md`. Il rejoue `verify --base <tag précédent>`, calcule `SHA256SUMS`, génère une attestation de provenance Sigstore pour `repository.json`, `SHA256SUMS` et chaque archive, puis crée le tag et la release GitHub (notes = section du CHANGELOG, pièces jointes `repository.json` et `SHA256SUMS`). Le job de contrôle n'a aucun droit d'écriture ; le job qui signe et publie n'installe aucun paquet.
+Le workflow refuse un tag mal formé ou déjà existant, un commit absent de `main`, et un tag sans section dans `CHANGELOG.md`. Il rejoue `verify --base <tag précédent> --release-tag <tag> --online` (les liens déjà servis répondent avec les octets de l'index), calcule `SHA256SUMS`, génère une attestation de provenance Sigstore pour `repository.json`, `SHA256SUMS` et chaque archive, puis crée le tag et la release GitHub (notes = section du CHANGELOG, pièces jointes `repository.json` et `SHA256SUMS`). Le job de contrôle n'a aucun droit d'écriture ; le job qui signe et publie n'installe aucun paquet. Un dernier job, en lecture seule, retélécharge ensuite tous les liens, dont ceux du nouveau tag.
+
+Le workflow **Download links** (hebdomadaire, ou manuel sur la branche choisie) rejoue `verify --online`.
 
 Vérifier un fichier : `gh attestation verify <fichier> --repo remi-deher/encoding-store`.
 
 ## Distribution des binaires
 
-Les archives d'outils sont volumineuses (binaires) et alourdissent l'historique git. Pour les prochaines versions, préférer des pièces jointes de release (ou Git LFS) référencées par `downloadUrl` ; `verify` accepte toute URL `https://raw.githubusercontent.com/remi-deher/encoding-store/<ref>/...` et doit être adapté si l'hébergement change.
+Les archives d'outils sont volumineuses (binaires) et alourdissent l'historique git. Pour les prochaines versions, préférer des pièces jointes de release (ou Git LFS) référencées par `downloadUrl` ; `verify` n'accepte que `https://raw.githubusercontent.com/remi-deher/encoding-store/<vAAAA.MM.JJ|SHA|main>/packages/...` et doit être adapté si l'hébergement change. Une archive suivie par Git LFS serait servie par `raw.githubusercontent.com` sous forme de pointeur : ne jamais migrer une version publiée.
