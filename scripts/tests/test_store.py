@@ -4,6 +4,7 @@ Exécution : python3 -m unittest discover -s scripts/tests -v   (depuis la racin
 """
 import argparse
 import contextlib
+import glob
 import io
 import json
 import os
@@ -21,16 +22,18 @@ import store  # noqa: E402
 @contextlib.contextmanager
 def repository_copy():
     """Copie jetable du dépôt (sans .git) sur laquelle store.py travaille."""
-    saved = (store.ROOT, store.INDEX_PATH, store.SPEC_PATH)
+    saved = (store.ROOT, store.INDEX_PATH, store.SPEC_PATH, store.CHANGELOG_PATH)
     with tempfile.TemporaryDirectory() as directory:
         for name in ("packages", "plugins", "schemas", "tools", "licenses"):
             shutil.copytree(os.path.join(saved[0], name), os.path.join(directory, name), ignore=shutil.ignore_patterns("__pycache__"))
         shutil.copy(saved[1], os.path.join(directory, "repository.json"))
-        store.ROOT, store.INDEX_PATH, store.SPEC_PATH = directory, os.path.join(directory, "repository.json"), os.path.join(directory, "plugins", "packages.json")
+        shutil.copy(saved[3], os.path.join(directory, "CHANGELOG.md"))
+        store.ROOT, store.INDEX_PATH, store.SPEC_PATH, store.CHANGELOG_PATH = (
+            directory, os.path.join(directory, "repository.json"), os.path.join(directory, "plugins", "packages.json"), os.path.join(directory, "CHANGELOG.md"))
         try:
             yield directory
         finally:
-            store.ROOT, store.INDEX_PATH, store.SPEC_PATH = saved
+            store.ROOT, store.INDEX_PATH, store.SPEC_PATH, store.CHANGELOG_PATH = saved
 
 
 def verify(base=None):
@@ -336,3 +339,142 @@ class ImmutabilityTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def run(handler, **kwargs):
+    output = io.StringIO()
+    with contextlib.redirect_stdout(output):
+        code = handler(argparse.Namespace(**kwargs))
+    return code, output.getvalue()
+
+
+def read_bytes(path):
+    with open(path, "rb") as handle:
+        return handle.read()
+
+
+SAMPLE_CHANGELOG = "# Changelog\n\nIntroduction.\n\n## Non publié\n\n### Plugins\n- un changement\n\n## v2000.01.01\n\n- ancien\n"
+
+
+def seed_changelog():
+    """CHANGELOG connu : les tests ne dépendent pas de l'état du vrai journal (par exemple juste après un release-prep)."""
+    with open(store.CHANGELOG_PATH, "w", encoding="utf-8") as handle:
+        handle.write(SAMPLE_CHANGELOG)
+
+
+def read_changelog():
+    with open(store.CHANGELOG_PATH, encoding="utf-8") as handle:
+        return handle.read()
+
+
+class PendingBuildTests(unittest.TestCase):
+    """pending et build --all-pending : toutes les versions des sources sans archive, en une commande, sans toucher au publié."""
+
+    def test_nothing_pending_on_a_valid_catalogue(self) -> None:
+        with repository_copy():
+            self.assertEqual([], store.pending_plugins(store.read_json(store.INDEX_PATH), store.read_json(store.SPEC_PATH)))
+            code, output = run(store.command_build, id=None, all_pending=True, ref="main")
+            self.assertEqual(0, code)
+            self.assertIn("Aucun plugin en attente", output)
+
+    def test_all_pending_builds_every_bumped_plugin_and_leaves_published_archives_alone(self) -> None:
+        with repository_copy() as directory:
+            before = {path: read_bytes(path) for path in glob.glob(os.path.join(directory, "packages", "**", "*.zip"), recursive=True)}
+            sonarr = bump_patch(directory, "arr/manifests/sonarr.json")
+            radarr = bump_patch(directory, "arr/manifests/radarr.json")
+            code, output = run(store.command_pending)
+            self.assertIn("radarr %s" % radarr, output)
+            self.assertIn("sonarr %s" % sonarr, output)
+            code, output = run(store.command_build, id=None, all_pending=True, ref="main")
+            self.assertEqual(0, code, output)
+            index = store.read_json(store.INDEX_PATH)
+            self.assertEqual(sonarr, plugin_entry(index, "sonarr")["latestVersion"])
+            self.assertEqual(radarr, plugin_entry(index, "radarr")["latestVersion"])
+            for path, data in before.items():
+                self.assertEqual(data, read_bytes(path), path)
+            self.assertEqual(0, verify()[0])
+            code, output = run(store.command_build, id=None, all_pending=True, ref="main")
+            self.assertIn("Aucun plugin en attente", output)
+
+
+@unittest.skipUnless(shutil.which("git"), "git est requis")
+class ReleasePrepTests(unittest.TestCase):
+    """release-prep : construit, contrôle puis écrit la section du CHANGELOG ; ne tague ni ne publie rien."""
+
+    def setUp(self) -> None:
+        self.copy = repository_copy()
+        self.directory = self.copy.__enter__()
+        self.addCleanup(self.copy.__exit__, None, None, None)
+        seed_changelog()
+
+    def test_first_snapshot_lists_latest_versions_and_reopens_unreleased(self) -> None:
+        directory = self.directory
+        init_git(directory)
+        unreleased = store.section_body(read_changelog(), store.UNRELEASED)
+        code, output = run(store.command_release_prep, tag="v2099.11.07", ref="main")
+        self.assertEqual(0, code, output)
+        text = read_changelog()
+        self.assertLess(text.index("## Non publié"), text.index("## v2099.11.07"))
+        self.assertEqual("", store.section_body(text, store.UNRELEASED))
+        notes = store.section_body(text, "## v2099.11.07")
+        self.assertIn("Premier instantané", notes)
+        self.assertIn("- plugin plex ", notes)
+        self.assertIn("- outil ffmpeg ", notes)
+        self.assertIn(unreleased, notes)
+        code, output = run(store.command_changelog, tag="v2099.11.07")
+        self.assertEqual(0, code)
+        self.assertEqual(notes, output.strip("\n"))
+        self.assertIn("## v2000.01.01\n\n- ancien", text)
+        self.assertEqual("", git(directory, "tag"))
+
+    def test_snapshot_builds_pending_plugins_and_lists_only_new_versions(self) -> None:
+        directory = self.directory
+        init_git(directory)
+        run(store.command_release_prep, tag="v2099.01.01", ref="main")
+        commit_all(directory, "instantané")
+        git(directory, "tag", "v2099.01.01")
+        version = bump_patch(directory, "plex/manifests/plex.json")
+        code, output = run(store.command_release_prep, tag="v2099.02.01", ref="main")
+        self.assertEqual(0, code, output)
+        self.assertTrue(os.path.isfile(store.archive_path("plex", version)))
+        notes = store.section_body(read_changelog(), "## v2099.02.01")
+        self.assertEqual("### Paquets de l'instantané\n\nNouvelles versions depuis v2099.01.01 :\n\n- plugin plex %s" % version, notes)
+
+    def test_nothing_to_publish_is_refused(self) -> None:
+        directory = self.directory
+        init_git(directory)
+        run(store.command_release_prep, tag="v2099.01.01", ref="main")
+        commit_all(directory, "instantané")
+        git(directory, "tag", "v2099.01.01")
+        with self.assertRaises(SystemExit) as raised, contextlib.redirect_stdout(io.StringIO()):
+            store.command_release_prep(argparse.Namespace(tag="v2099.02.01", ref="main"))
+        self.assertIn("Rien à publier", str(raised.exception))
+
+    def test_existing_tag_or_section_and_invalid_tags_are_refused(self) -> None:
+        directory = self.directory
+        init_git(directory)
+        git(directory, "tag", "v2099.01.01")
+        for tag, message in (("v2099.01.01", "existe déjà"), ("v2099.13.01", "Tag invalide"), ("2026.01.02", "Tag invalide"), ("v2099.1.2", "Tag invalide")):
+            with self.assertRaises(SystemExit) as raised:
+                store.command_release_prep(argparse.Namespace(tag=tag, ref="main"))
+            self.assertIn(message, str(raised.exception))
+        run(store.command_release_prep, tag="v2099.03.01", ref="main")
+        with self.assertRaises(SystemExit) as raised:
+            store.command_release_prep(argparse.Namespace(tag="v2099.03.01", ref="main"))
+        self.assertIn("déjà la section", str(raised.exception))
+
+    def test_failed_verification_leaves_changelog_untouched(self) -> None:
+        directory = self.directory
+        init_git(directory)
+        before = read_changelog()
+        path = store.archive_path("plex", plugin_entry(store.read_json(store.INDEX_PATH), "plex")["latestVersion"])
+        with open(path, "ab") as handle:
+            handle.write(b"x")
+        code, output = run(store.command_release_prep, tag="v2099.11.07", ref="main")
+        self.assertEqual(1, code)
+        self.assertIn("Préparation interrompue", output)
+        self.assertEqual(before, read_changelog())
+
+    def test_missing_changelog_section_fails(self) -> None:
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(1, run(store.command_changelog, tag="v1999.01.01")[0])

@@ -1,0 +1,5 @@
+# Outils de la CI (lint, typage, contrôle du catalogue). Régénérer requirements/dev.txt :
+#   uv pip compile --generate-hashes --python-version 3.12 --python-platform x86_64-manylinux_2_28 requirements/dev.in -o requirements/dev.txt
+fastjsonschema
+ruff
+mypy
