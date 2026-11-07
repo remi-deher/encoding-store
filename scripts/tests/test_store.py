@@ -36,10 +36,10 @@ def repository_copy():
             store.ROOT, store.INDEX_PATH, store.SPEC_PATH, store.CHANGELOG_PATH = saved
 
 
-def verify(base=None):
+def verify(base=None, require_ancestor=False):
     output = io.StringIO()
     with contextlib.redirect_stdout(output):
-        code = store.command_verify(argparse.Namespace(base=base))
+        code = store.command_verify(argparse.Namespace(base=base, require_ancestor=require_ancestor))
     return code, output.getvalue()
 
 
@@ -327,6 +327,24 @@ class ImmutabilityTests(unittest.TestCase):
             commit_all(directory, "plex suivant")
             git(directory, "switch", "-q", "feature")
             code, output = verify("main")
+            self.assertEqual(0, code, output)
+
+    def test_rewritten_history_is_rejected_on_push(self) -> None:
+        # Push forcé : le commit précédent de la branche (github.event.before) n'est plus ancêtre de HEAD. Le point de divergence
+        # reculerait avant l'archive publiée, et une archive republiée passerait : le contrôle sur push doit échouer.
+        with repository_copy() as directory:
+            init_git(directory)
+            bump_patch(directory, "plex/manifests/plex.json")
+            with contextlib.redirect_stdout(io.StringIO()):
+                store.command_build(argparse.Namespace(id="plex", ref="main"))
+            before = commit_all(directory, "plex suivant")
+            git(directory, "reset", "-q", "--hard", "HEAD~1")
+            git(directory, "commit", "-q", "--allow-empty", "-m", "historique réécrit")
+            self.assertEqual(0, verify(before)[0])  # sans l'option, la réécriture passe inaperçue
+            code, output = verify(before, require_ancestor=True)
+            self.assertEqual(1, code)
+            self.assertIn("historique réécrit depuis %s" % before, output)
+            code, output = verify(git(directory, "rev-parse", "HEAD~1"), require_ancestor=True)
             self.assertEqual(0, code, output)
 
     def test_unknown_base_is_reported(self) -> None:

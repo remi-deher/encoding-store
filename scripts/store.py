@@ -469,7 +469,13 @@ def check_published_entries(old_index: Json, new_index: Json, base: str, problem
                     problems.append("%s : %s modifié dans repository.json, une version publiée est immuable." % (label, key))
 
 
-def check_immutability(base: str, problems: Problems) -> None:
+def check_immutability(base: str, problems: Problems, require_ancestor: bool = False) -> None:
+    # Sur push, la base est le commit précédent de la branche : s'il n'est plus ancêtre de HEAD, l'historique a été réécrit
+    # (push forcé) et le point de divergence recule avant les archives retirées ou republiées. On refuse au lieu de comparer.
+    if require_ancestor and git("merge-base", "--is-ancestor", base, "HEAD").returncode != 0:
+        problems.append("historique réécrit depuis %s : ce commit n'est plus un ancêtre de HEAD (push forcé ?), "
+                        "l'immuabilité des paquets publiés ne peut pas être garantie." % base)
+        return
     # Point de divergence et non pointe de la base : une branche en retard ne doit pas voir les ajouts de la base comme des suppressions.
     merge_base = git("merge-base", base, "HEAD")
     if merge_base.returncode != 0:
@@ -518,7 +524,7 @@ def command_verify(args: argparse.Namespace) -> int:
         problems.append("%s : archive absente de repository.json." % orphan)
     check_licenses(problems)
     if args.base:
-        check_immutability(args.base, problems)
+        check_immutability(args.base, problems, getattr(args, "require_ancestor", False))
     for problem in problems:
         print("ERREUR", problem)
     print("%d erreur(s)." % len(problems) if problems else "Catalogue valide.")
@@ -581,6 +587,8 @@ def main(argv: list[str]) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     verify = commands.add_parser("verify")
     verify.add_argument("--base", help="référence git de comparaison : les paquets déjà publiés ne doivent pas changer")
+    verify.add_argument("--require-ancestor", action="store_true",
+                        help="avec --base : échoue si la base n'est pas un ancêtre de HEAD (push forcé, historique réécrit)")
     verify.set_defaults(handler=command_verify)
     build = commands.add_parser("build")
     build.add_argument("id", nargs="?")
