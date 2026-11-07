@@ -3,7 +3,8 @@ name: Download links
 # Contrôle en ligne des liens servis aux moteurs : chaque downloadUrl de repository.json répond et sert exactement
 # l'archive dont l'index publie le SHA-256. Lecture seule. La planification hebdomadaire contrôle la branche par défaut ;
 # le lancement manuel contrôle la branche choisie (main, une fois l'outillage porté sur main).
-# Les liens épinglés à un tag pas encore créé (instantané préparé, pas publié) sont signalés et sautés.
+# Les liens épinglés à un tag pas encore créé (instantané préparé, pas publié) sont signalés et sautés, sauf si ce tag est
+# daté de plus de 7 jours (--max-pending-days) : release oubliée, le job échoue.
 on:
   schedule:
     - cron: "17 5 * * 1"

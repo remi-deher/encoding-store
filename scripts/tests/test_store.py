@@ -519,7 +519,7 @@ class ReleasePrepTests(unittest.TestCase):
 def verify_with(**kwargs):
     output = io.StringIO()
     with contextlib.redirect_stdout(output):
-        code = store.command_verify(argparse.Namespace(**dict({"base": None, "release_tag": None, "online": False}, **kwargs)))
+        code = store.command_verify(argparse.Namespace(**dict({"base": None, "release_tag": None, "online": False, "max_pending_days": store.MAX_PENDING_DAYS}, **kwargs)))
     return code, output.getvalue()
 
 
@@ -748,6 +748,38 @@ class OnlineLinkTests(unittest.TestCase):
         self.assertEqual(1, code)
         self.assertIn("plugin plex 1.1.1 : lien injoignable après %d tentatives (<urlopen error timed out>" % store.DOWNLOAD_ATTEMPTS, output)
         self.assertEqual(store.DOWNLOAD_ATTEMPTS, self.fetched.count(self.url("1.1.1")))
+
+    def test_pending_tag_older_than_the_limit_fails_online(self) -> None:
+        # Release oubliée : le tag d'instantané, daté, n'existe toujours pas des semaines plus tard ; ses liens répondent 404.
+        version = bump_patch(self.directory, "plex/manifests/plex.json")
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            store.command_build(argparse.Namespace(id="plex", ref="v2000.01.01"))
+        self.assertEqual(0, verify_with()[0], "hors ligne, un tag en attente reste admis")
+        code, output = verify_with(online=True)
+        self.assertEqual(1, code)
+        self.assertIn("tag v2000.01.01 toujours absent", output)
+        self.assertIn("release oubliée", output)
+        self.assertNotIn(store.download_url("v2000.01.01", "plex", version), self.fetched)
+        self.assertEqual(0, verify_with(online=True, release_tag="v2000.01.01")[0], "le tag en cours de publication est exclu")
+        self.assertEqual(0, verify_with(online=True, max_pending_days=100000)[0], "seuil paramétrable")
+
+    def test_stale_pending_threshold(self) -> None:
+        today = store.datetime.date(2099, 11, 20)
+        for tag, days, stale in (("v2099.11.13", 7, False), ("v2099.11.12", 7, True), ("v2099.11.12", 8, False), ("v2099.12.01", 7, False)):
+            problems: list[str] = []
+            store.check_stale_pending({tag}, None, days, problems, today)
+            self.assertEqual(stale, bool(problems), (tag, days))
+
+    def test_pending_tags_are_annotated_in_github_actions(self) -> None:
+        bump_patch(self.directory, "plex/manifests/plex.json")
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            store.command_build(argparse.Namespace(id="plex", ref="v2099.11.07"))
+        with unittest.mock.patch.dict(os.environ, {"GITHUB_ACTIONS": "true"}):
+            code, output = verify_with()
+        self.assertEqual(0, code, output)
+        self.assertIn("::warning title=Tag v2099.11.07 non publié::", output)
+        with unittest.mock.patch.dict(os.environ, {"GITHUB_ACTIONS": ""}):
+            self.assertNotIn("::warning", verify_with()[1])
 
     def test_links_to_a_tag_not_yet_created_are_skipped(self) -> None:
         version = bump_patch(self.directory, "plex/manifests/plex.json")

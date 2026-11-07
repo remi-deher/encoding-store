@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Outils du dépôt Encoding Store : construction reproductible des paquets de plugins et contrôle du catalogue.
 
-    python3 scripts/store.py verify [--base REF] [--release-tag TAG] [--online]
+    python3 scripts/store.py verify [--base REF] [--release-tag TAG] [--online [--max-pending-days N]]
                                                       contrôle complet (CI) ; --base REF refuse toute modification d'un paquet déjà publié ;
-                                                      --online télécharge chaque downloadUrl et compare son SHA-256 à l'index
+                                                      --online télécharge chaque downloadUrl et compare son SHA-256 à l'index, et
+                                                      refuse un tag en attente daté de plus de N jours (7 par défaut)
     python3 scripts/store.py build <id> [--ref REF]  construit packages/<id>/<version>/<version>.zip depuis plugins/ et l'ajoute à repository.json ;
                                                       downloadUrl épinglé au tag vAAAA.MM.JJ du jour (défaut) ou à REF
     python3 scripts/store.py build --all-pending      construit tous les plugins dont la version des sources n'a pas d'archive
@@ -53,6 +54,7 @@ COMMIT_SHA = re.compile(r"^[0-9a-f]{40}$")
 # Refs admises dans downloadUrl : main (liens historiques), SHA de commit ou tag d'instantané. Rien d'autre, donc ni « .. » ni branche.
 DOWNLOAD_REF = r"(main|[0-9a-f]{40}|v[0-9]{4}\.[0-9]{2}\.[0-9]{2})"
 # Même motif pour git describe --match (glob) : un tag parasite plus proche (v1.0, v2-test) ne doit pas masquer l'instantané précédent.
+MAX_PENDING_DAYS = 7  # au-delà, un tag d'instantané toujours absent est une release oubliée : ses liens répondent 404
 RELEASE_TAG_GLOB = "v[0-9][0-9][0-9][0-9].[0-9][0-9].[0-9][0-9]"
 UNRELEASED = "## Non publié"
 MAX_DOWNLOAD = 256 * 1024 * 1024
@@ -624,6 +626,35 @@ def check_online(links: list[Link], pending: set[str], problems: Problems, notes
         len(targets), len(failures), ", %d sauté(s) (tag pas encore créé)" % (len(links) - len(targets)) if len(links) != len(targets) else ""))
 
 
+def tag_date(tag: str) -> datetime.date:
+    match = RELEASE_TAG.match(tag)
+    assert match is not None, tag
+    return datetime.date(*(int(part) for part in match.groups()))
+
+
+def check_stale_pending(pending: set[str], release_tag: str | None, max_days: int, problems: Problems,
+                        today: datetime.date | None = None) -> None:
+    """Un tag d'instantané porte sa date : encore absent plus de max_days jours après, sa release a été oubliée et ses liens
+    répondent 404 aux moteurs. Le tag en cours de publication (release_tag) est exclu."""
+    today = today or datetime.datetime.now(datetime.timezone.utc).date()
+    for tag in sorted(pending - {release_tag}):
+        age = (today - tag_date(tag)).days
+        if age > max_days:
+            problems.append("tag %s toujours absent %d jours après sa date (plus de %d) : release oubliée, ses liens répondent 404. "
+                            "Publiez-la (workflow « Release ») ou réalignez les liens avec release-prep." % (tag, age, max_days))
+
+
+def pending_annotations(pending: set[str]) -> None:
+    """Dans GitHub Actions, rend visibles sur la PR ou le commit les tags pas encore publiés : tant qu'ils manquent, les moteurs
+    qui lisent cet index obtiennent un 404 (installation refusée proprement). Le tag doit être publié avant que l'index qui le
+    référence n'atteigne la branche lue par les moteurs."""
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        return
+    for tag in sorted(pending):
+        print("::warning title=Tag %s non publié::Des liens de repository.json visent le tag %s, qui n'existe pas encore : ils "
+              "répondent 404 tant que la release %s n'est pas publiée. Publiez-la dès la fusion dans main." % (tag, tag, tag))
+
+
 def pinned_url_change(old: str, new: str) -> bool:
     """Évolutions admises du lien d'une version de la base, même chemin : de main vers un SHA de commit (épinglage), ou d'un tag
     qui n'a jamais servi l'archive (tag jamais créé, ou créé sans elle) vers un autre tag (le lien n'a jamais répondu ;
@@ -727,7 +758,9 @@ def command_verify(args: argparse.Namespace) -> int:
     pending = check_pinned_links(links, release_tag, problems, notes)
     if args.base:
         check_immutability(args.base, problems, notes, getattr(args, "require_ancestor", False))
+    pending_annotations(pending)
     if getattr(args, "online", False):
+        check_stale_pending(pending, release_tag, getattr(args, "max_pending_days", MAX_PENDING_DAYS), problems)
         check_online(links, pending, problems, notes)
     for note in notes:
         print("NOTE", note)
@@ -795,6 +828,8 @@ def main(argv: list[str]) -> int:
     verify.add_argument("--base", help="référence git de comparaison : les paquets déjà publiés ne doivent pas changer")
     verify.add_argument("--release-tag", help="tag vAAAA.MM.JJ en cours de publication : seul tag encore absent admis dans les liens")
     verify.add_argument("--online", action="store_true", help="télécharge chaque downloadUrl et compare son SHA-256 à l'index")
+    verify.add_argument("--max-pending-days", type=int, default=MAX_PENDING_DAYS,
+                        help="avec --online : échoue si un tag en attente est daté de plus de N jours (défaut : %(default)s)")
     verify.add_argument("--require-ancestor", action="store_true",
                         help="avec --base : échoue si la base n'est pas un ancêtre de HEAD (push forcé, historique réécrit)")
     verify.set_defaults(handler=command_verify)
