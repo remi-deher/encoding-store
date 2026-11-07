@@ -5,6 +5,8 @@ Les paquets publiés sont immuables : chaque modification de sources passe par u
 ## Non publié
 
 ### Outillage du dépôt
+- Publication automatisée jusqu'à la décision humaine : `store.py pending`, `build --all-pending`, `release-prep` (archives en attente, `verify` depuis le tag précédent (seuls les tags `vAAAA.MM.JJ` comptent : un tag parasite plus proche ne fait plus sauter le contrôle), section `## vAAAA.MM.JJ` du CHANGELOG) et `changelog <tag>` ; workflow manuel « Prepare release » qui ouvre la PR `release/vAAAA.MM.JJ`. Le workflow « Release » ne publie qu'un tag `vAAAA.MM.JJ` d'un commit de `main` ayant sa section de CHANGELOG, contrôle l'immuabilité depuis le tag précédent, atteste aussi `SHA256SUMS`, et sépare contrôle (lecture seule) et publication (aucun paquet installé).
+- CI : actions épinglées par SHA, dépendances Python épinglées par hash (`requirements/`), Dependabot, plugins en attente d'archive affichés dans le résumé du job.
 - `verify` : les sources de chaque plugin doivent correspondre à sa dernière version publiée (retour arrière détecté), tout fichier du répertoire d'un plugin doit être déclaré dans `plugins/packages.json`, archives ZIP sans doublon, lien symbolique ni taille excessive, orphelins cherchés à toute profondeur de `packages/`.
 - `verify --base` : compare au point de divergence (plus de faux positifs sur une branche en retard) et protège aussi les entrées de `repository.json` des versions publiées (seul l'épinglage d'un lien `main` vers un SHA de commit est admis). Sur push, `--require-ancestor` fait échouer la CI si l'historique a été réécrit (push forcé).
 - CI : déclenchée aussi sur push `dev`, immuabilité contrôlée sur push, contrôles d'intégrité et tests exécutés même si le lint ou le typage échoue.

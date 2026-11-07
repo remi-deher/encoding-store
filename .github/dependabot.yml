@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Actions épinglées par SHA : Dependabot propose la montée de version (SHA et commentaire).
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+  # requirements/*.txt (hashes) : régénérés par Dependabot ; dev.in / release.in restent la source.
+  - package-ecosystem: pip
+    directory: "/requirements"
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
